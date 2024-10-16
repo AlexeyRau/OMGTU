@@ -39,25 +39,28 @@ def objective(x):
     return (x[0] - 4)**2 + (x[1] - 2)**2
 
 # Ограничения
-constraints = (
-    {'type': 'ineq', 'fun': lambda x: 4*x[0] + 2*x[1] - 11},
-    {'type': 'ineq', 'fun': lambda x: -2*x[0] - 7},
-)
+def constraint1(x):
+    return 4*x[0] + 2*x[1] - 11
+def constraint2(x):
+    return -2*x[0] - 7
+
+constraints = ({'type': 'ineq', 'fun': constraint1},
+               {'type': 'ineq', 'fun': constraint2})
 
 # Ограничения на переменные (x1 >= 0 и x2 >= 0)
-bounds = [(0, None), (0, None)]
+bounds = ((0, None), (0, None))
 
 # Начальная точка для оптимизации
-initial_guess = [0, 0]
+x0 = np.array([0, 0])
 
 # Решение задачи оптимизации
-result = minimize(objective, initial_guess, method='SLSQP', bounds=bounds, constraints=constraints)
+result = minimize(objective, x0, method='SLSQP', bounds=bounds, constraints=constraints)
 
 # Проверка успешности
 if result.success:
-    optimized_x = result.x
-    optimized_value = result.fun
-    print(f"Оптимальное значение: {optimized_value}")
-    print(f"Оптимальные решения: x1 = {optimized_x[0]}, x2 = {optimized_x[1]}")
+    print(f"Оптимальное значение: {result.fun}")
+    print(f"Оптимальные решения: x1 = {result.x[0]}, x2 = {result.x[1]}")
 else:
     print("Оптимизация не удалась:", result.message)
+    
+print(result)
