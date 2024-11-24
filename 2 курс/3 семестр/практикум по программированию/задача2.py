@@ -21,12 +21,33 @@ print(f'Первая производная: {first_derivative_sym}')
 print(f'Вторая производная: {second_derivative_sym}')
 print("")
 
+# Задаем пределы интегрирования
 a = 3
 b = 6
+
+# Определяем функцию
 def y(x):
     return 2 / (np.sin(x) + 4)
-integral, error = integrate.quad(y, a, b)
-print(f'Результат интегрирования в пределах ({a},{b}): {integral}')
+
+# Метод прямоугольников
+def rectangle_method(func, a, b, n):
+    # Шаг интегрирования
+    h = (b - a) / n
+    integral = 0.0
+    
+    # Вычисляем сумму прямоугольников
+    for i in range(n):
+        x_i = a + i * h  # Левый конец интервала
+        integral += func(x_i) * h  # Площадь прямоугольника
+    
+    return integral
+
+# Количество подынтервалов
+n = 1000  # Чем больше n, тем точнее результат
+
+# Вычисляем интеграл
+result = rectangle_method(y, a, b, n)
+print(f'Результат интегрирования в пределах ({a},{b}): {result}')
 print("")
 
 y = 2 / (sp.sin(x) + 4)
