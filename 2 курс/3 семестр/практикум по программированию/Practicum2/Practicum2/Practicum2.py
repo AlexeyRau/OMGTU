@@ -4,6 +4,7 @@ import scipy.integrate as integrate
 import sympy as sp
 from scipy.optimize import minimize
 
+#Поиск первой и второй производной в точке x0
 def y(x):
     return 2 / (np.sin(x) + 4)
 x0 = 2
@@ -14,6 +15,7 @@ print(f'Первая производная в точке x0={x0}: {first_deriva
 print(f'Вторая производная в точке x0={x0}: {second_derivative}')
 print("")
 
+#Символьные представления первой и второй производных
 x = sp.symbols('x')
 y = 2 / (sp.sin(x) + 4)
 first_derivative_sym = sp.diff(y, x)
@@ -22,20 +24,20 @@ print(f'Первая производная: {first_derivative_sym}')
 print(f'Вторая производная: {second_derivative_sym}')
 print("")
 
-
+#Вычисление определённого интеграла методом прямоугольников
 a = 3
 b = 6
-n = 1000
+n = 1000#Количество прямоугольников
 def y(x):
     return 2 / (np.sin(x) + 4)
 
 def rectangle_method(func, a, b, n):
-    h = (b - a) / n
+    h = (b - a) / n #Шаг
     integral = 0.0
     
     for i in range(n):
-        x = a + i * h
-        integral += func(x) * h
+        x = a + i * h #x i-е(Точка левая граница подынтеграла)
+        integral += func(x) * h #Сумма значений интегралов каждого отрезка(сумма площадей прямоугольников)
     
     return integral
 
@@ -43,12 +45,13 @@ result = rectangle_method(y, a, b, n)
 print(f'Результат интегрирования в пределах ({a},{b}): {result}')
 print("")
 
+#Вывод неопределённого интеграла с помощью sympy
 y = 2 / (sp.sin(x) + 4)
 indefinite_integral = sp.integrate(y, x)
 print(f'Неопределённый интеграл: {indefinite_integral}')
 print("")
 
-# Целевая функция
+#Решение задачи нелинейной оптимизации
 def objective(x):
     return (x[0] - 4)**2 + (x[1] - 2)**2
 
