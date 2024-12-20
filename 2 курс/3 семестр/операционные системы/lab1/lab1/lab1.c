@@ -1,27 +1,31 @@
-#include <windows.h>
+п»ї#include <windows.h>
 #include <stdio.h>
 
+#define BUFFER_SIZE 1024
+
 int main() {
-    // Получение хэндлов стандартного ввода и вывода
-    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleOutputCP(1251);
+	SetConsoleCP(1251);
+	// РџРѕР»СѓС‡РµРЅРёРµ С…СЌРЅРґР»РѕРІ СЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ РІРІРѕРґР° Рё РІС‹РІРѕРґР°
+	HANDLE hStdIn = GetStdHandle(STD_INPUT_HANDLE);
+	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    // Вывод хэндлов
-    printf("Standard Input Handle: %p\n", hStdin);
-    printf("Standard Output Handle: %p\n", hStdout);
+	// РџСЂРѕРІРµСЂРєР°, СЃРІСЏР·Р°РЅ Р»Рё СЃС‚Р°РЅРґР°СЂС‚РЅС‹Р№ РІС‹РІРѕРґ СЃ РєРѕРЅСЃРѕР»СЊСЋ
+	if (GetFileType(hStdOut) == FILE_TYPE_CHAR) {
+		// Р’С‹РІРѕРґ Р·РЅР°С‡РµРЅРёР№ С…СЌРЅРґР»РѕРІ С‚РѕР»СЊРєРѕ РµСЃР»Рё РІС‹РІРѕРґ РЅР° РєРѕРЅСЃРѕР»СЊ
+		printf("РҐСЌРЅРґР» СЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ РІРІРѕРґР°: %p\n", hStdIn);
+		printf("РҐСЌРЅРґР» СЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ РІС‹РІРѕРґР°: %p\n", hStdOut);
+		printf("Р’РІРѕРґ: ");
+	}
 
-    // Приглашение для ввода
-    WriteFile(hStdout, "Enter some text: ", 17, NULL, NULL);
+	// Р§С‚РµРЅРёРµ РґР°РЅРЅС‹С… РёР· СЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ РІРІРѕРґР°
+	char buffer[BUFFER_SIZE];
+	DWORD bytesRead;
+	ReadFile(hStdIn, buffer, BUFFER_SIZE - 1, &bytesRead, NULL);
+	buffer[bytesRead] = '\0';
 
-    // Чтение данных из стандартного ввода
-    char buffer[256];
-    DWORD bytesRead;
-    ReadFile(hStdin, buffer, sizeof(buffer) - 1, &bytesRead, NULL);
-    buffer[bytesRead] = '\0'; // Добавление завершающего нуля
+	// Р’С‹РІРѕРґ РІРІРµРґРµРЅРЅС‹С… РґР°РЅРЅС‹С…
+	printf("Р’С‹ РІРІРµР»Рё: %s", buffer);
 
-    // Вывод введенного текста
-    WriteFile(hStdout, "You entered: ", 13, NULL, NULL);
-    WriteFile(hStdout, buffer, bytesRead, NULL, NULL);
-
-    return 0;
+	return 0;
 }
