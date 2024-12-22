@@ -100,3 +100,8 @@ survival_by_sex = df5.groupby(['sex', 'survived']).size().unstack()
 print('Задание 16')
 print(survival_by_sex)
 print('')
+
+survival_by_class = df5.groupby(['pclass', 'survived']).size().unstack()
+print('Задание 17')
+print(survival_by_class)
+print('')
