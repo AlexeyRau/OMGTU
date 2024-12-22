@@ -47,3 +47,8 @@ df5.iloc[0], df5.iloc[2] = df5.iloc[2].copy(), df5.iloc[0].copy()
 print('Задание 7')
 print(df5)
 print('')
+
+df5['sex'] = df5['sex'].map({'female': 'f', 'male': 'm'})
+print('Задание 8')
+print(df5)
+print('')
