@@ -95,3 +95,8 @@ top_10_paid = df5.sort_values(by='fare', ascending=False).head(10)
 print('Задание 15')
 print(top_10_paid)
 print('')
+
+survival_by_sex = df5.groupby(['sex', 'survived']).size().unstack()
+print('Задание 16')
+print(survival_by_sex)
+print('')
