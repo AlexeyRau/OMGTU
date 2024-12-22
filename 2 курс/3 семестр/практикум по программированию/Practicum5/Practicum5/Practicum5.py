@@ -60,3 +60,9 @@ df9 = df9.sort_values(by='ticket')
 print('Задание 9')
 print(df9)
 print('')
+
+names_from_df1 = df1['Name'].tolist()
+cabin_mates = df5[df5['name'].isin(names_from_df1)]
+print('Задание 10')
+print(cabin_mates)
+print('')
