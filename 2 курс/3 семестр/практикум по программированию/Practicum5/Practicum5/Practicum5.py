@@ -52,3 +52,11 @@ df5['sex'] = df5['sex'].map({'female': 'f', 'male': 'm'})
 print('Задание 8')
 print(df5)
 print('')
+
+ticket_counts = df5.groupby('ticket').size()
+popular_tickets = ticket_counts[ticket_counts >= 6].index
+df9 = df5[df5['ticket'].isin(popular_tickets)]
+df9 = df9.sort_values(by='ticket')
+print('Задание 9')
+print(df9)
+print('')
