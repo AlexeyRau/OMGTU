@@ -27,3 +27,10 @@ df4 = df4.drop_duplicates()
 print('Задание 4')
 print(df4)
 print('')
+
+df5 = df4
+df5.set_index('passengerid', inplace=True)
+df5.sort_index(inplace=True)
+print('Задание 5')
+print(df5)
+print('')
