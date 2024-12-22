@@ -71,3 +71,9 @@ df5['birthyear'] = 2023 - df5['age']
 print('Задание 11')
 print(df5)
 print('')
+
+cabin_counts = df5.groupby('Cabin').size()
+df5['Companion'] = df5['Cabin'].map(cabin_counts)
+print('Задание 12')
+print(df5)
+print('')
