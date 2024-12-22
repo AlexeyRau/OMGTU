@@ -1,5 +1,8 @@
 ﻿import pandas as pd
 
+pd.set_option('display.max_columns', None)  # Показывать все столбцы
+pd.set_option('display.width', None)  # Позволяет отображать данные без обрезания
+
 data = {
     'Name': ['Strom, Mrs. Wilhelm (Elna Matilda Persson)', 'Navratil, Mr. Michel ("Louis M Hoffman")', 'Minahan, Miss. Daisy E'],
     'Age': [29, 36.5, 33],
@@ -61,19 +64,24 @@ print('Задание 9')
 print(df9)
 print('')
 
-names_from_df1 = df1['Name'].tolist()
-cabin_mates = df5[df5['name'].isin(names_from_df1)]
+cabins_from_df1 = df5[df5['name'].isin(df1['Name']) & df5['cabin'].notna()]['cabin'].unique()
+people_in_same_cabins = df5[df5['cabin'].isin(cabins_from_df1)]
 print('Задание 10')
-print(cabin_mates)
+print(people_in_same_cabins)
 print('')
 
-df5['birthyear'] = 2023 - df5['age']
+df5['birthyear'] = 1912 - df5['age']
 print('Задание 11')
 print(df5)
 print('')
 
-cabin_counts = df5.groupby('Cabin').size()
-df5['Companion'] = df5['Cabin'].map(cabin_counts)
+cabin_counts = df5.groupby('cabin').transform('size')
+df5['Companion'] = cabin_counts - 1
 print('Задание 12')
+print(df5)
+print('')
+
+df5.iloc[0], df5.iloc[1] = df5.iloc[1].copy(), df5.iloc[0].copy()
+print('Задание 13')
 print(df5)
 print('')
