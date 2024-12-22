@@ -33,7 +33,7 @@ print('')
 
 df5 = df4
 df5.set_index('passengerid', inplace=True)
-df5.sort_index(inplace=True)
+df5 = df5.sort_values(by='passengerid')
 print('Задание 5')
 print(df5)
 print('')
