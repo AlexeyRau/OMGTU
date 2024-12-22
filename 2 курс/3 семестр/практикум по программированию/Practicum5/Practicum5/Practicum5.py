@@ -85,3 +85,8 @@ df5.iloc[0], df5.iloc[1] = df5.iloc[1].copy(), df5.iloc[0].copy()
 print('Задание 13')
 print(df5)
 print('')
+
+df5.to_csv('titanic_final.csv', index=True)
+print('Задание 14')
+print('Датафрейм сохранен в файл titanic_final.csv')
+print('')
