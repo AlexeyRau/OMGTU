@@ -8,3 +8,6 @@ data = {
 }
 df1 = pd.DataFrame(data)
 print(df1)
+# Загружаем данные из файла
+df2 = pd.read_csv('titanic_csv.csv', delimiter=';')
+print(df2)
