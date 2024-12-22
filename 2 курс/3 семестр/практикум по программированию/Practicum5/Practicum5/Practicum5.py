@@ -86,7 +86,12 @@ print('Задание 13')
 print(df5)
 print('')
 
-df5.to_csv('titanic_final.csv', index=True)
+df5.to_csv('titanic_final.csv', sep=';')
 print('Задание 14')
 print('Датафрейм сохранен в файл titanic_final.csv')
+print('')
+
+top_10_paid = df5.sort_values(by='fare', ascending=False).head(10)
+print('Задание 15')
+print(top_10_paid)
 print('')
