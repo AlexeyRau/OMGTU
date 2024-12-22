@@ -66,3 +66,8 @@ cabin_mates = df5[df5['name'].isin(names_from_df1)]
 print('Задание 10')
 print(cabin_mates)
 print('')
+
+df5['birthyear'] = 2023 - df5['age']
+print('Задание 11')
+print(df5)
+print('')
