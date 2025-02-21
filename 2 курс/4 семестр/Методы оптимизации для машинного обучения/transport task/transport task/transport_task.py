@@ -67,10 +67,6 @@ def calculate_potentials(X, C):
     
     return u, v
 
-u, v = calculate_potentials(X, C)
-print("Потенциалы u:", u)
-print("Потенциалы v:", v)
-
 def find_entering_cell(X, C, u, v):
     max_diff = 0
     entering_cell = None
@@ -84,10 +80,6 @@ def find_entering_cell(X, C, u, v):
                     entering_cell = (i, j)
     
     return entering_cell
-
-entering_cell = find_entering_cell(X, C, u, v)
-
-print(f"Начальная точка: {entering_cell}")
 
 def find_cycle(X, entering_cell):
     m, n = X.shape
@@ -145,3 +137,38 @@ def redistribute_supplies(X, cycle):
             X[i, j] += min_value
 
     return X
+
+def is_optimal(u, v, C, X):
+    for i in range(X.shape[0]):
+        for j in range(X.shape[1]):
+            if X[i, j] == 0:
+                if u[i] + v[j] - C[i, j] > 0:
+                    return False
+    return True
+
+# Основная функция для решения транспортной задачи
+def transportation_problem(C, a, b):
+    X = north_west_corner(a, b)
+    
+    while True:
+        u, v = calculate_potentials(X, C)
+        
+        if is_optimal(u, v, C, X):
+            print("Оптимальное решение найдено:")
+            print(X)
+            break
+        
+        entering_cell = find_entering_cell(X, C, u, v)
+        if entering_cell is None:
+            print("Оптимальное решение найдено:")
+            print(X)
+            break
+        
+        cycle = find_cycle(X, entering_cell)
+        X = redistribute_supplies(X, cycle)
+        
+        print("Новое решение:")
+        print(X)
+
+# Запуск решения транспортной задачи
+transportation_problem(C, a, b)
