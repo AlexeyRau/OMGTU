@@ -17,10 +17,12 @@ total_demand = np.sum(b)
 if total_supply > total_demand:
     print("Открытая модель. Добавляем фиктивный магазин.")
     b = np.append(b, total_supply - total_demand)
+    C = np.hstack((C, np.zeros((C.shape[0], 1))))
     print(f"{total_supply} - {total_demand} = {b[len(b)-1]}, b{len(b)} = {b[len(b)-1]}")
 elif total_supply < total_demand:
     print("Открытая модель. Добавляем фиктивный склад.")
     a = np.append(a, total_demand - total_supply)
+    C = np.vstack((C, np.zeros((C.shape[1],))))
     print(f"{total_demand} - {total_supply} = {a[len(a)-1]}, a{len(a)} = {a[len(a)-1]}")
 else:
     print("Закрытая модель.")
@@ -50,3 +52,4 @@ def north_west_corner(a, b):
 X = north_west_corner(a.copy(), b.copy())
 print("Начальная транспортная таблица:")
 print(X)
+
