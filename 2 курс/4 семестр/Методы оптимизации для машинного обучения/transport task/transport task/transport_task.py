@@ -24,3 +24,29 @@ elif total_supply < total_demand:
     print(f"{total_demand} - {total_supply} = {a}, a{len(a)} = {a[len(a)-1]}")
 else:
     print("Закрытая модель.")
+
+def north_west_corner(a, b):
+    m, n = len(a), len(b)
+    X = np.zeros((m, n))
+    i, j = 0, 0
+    
+    while i < m and j < n:
+        if a[i] < b[j]:
+            X[i, j] = a[i]
+            b[j] -= a[i]
+            print(f"{i+j}-я итерация:")
+            print(X)
+            i += 1
+        else:
+            X[i, j] = b[j]
+            a[i] -= b[j]
+            print(f"{i+j}-я итерация:")
+            print(X)
+            j += 1
+    print("------------------------")
+    return X
+
+# Построение начальной таблицы
+X = north_west_corner(a.copy(), b.copy())
+print("Начальная транспортная таблица:")
+print(X)
