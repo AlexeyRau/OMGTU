@@ -1,20 +1,19 @@
 from itertools import cycle
 import numpy as np
 
-# Матрица стоимости
 C = np.array([
     [40, 36, 9, 20],
     [26, 11, 22, 26],
     [6, 3, 12, 3],
     [5, 37, 33, 26]
 ])
-# Вектор ai
+
 a = np.array([24, 42, 23, 36])
-# Вектор bj
 b = np.array([35, 29, 21, 35])
 
 total_supply = np.sum(a)
 total_demand = np.sum(b)
+
 if total_supply > total_demand:
     print("Открытая модель. Добавляем фиктивный магазин.")
     b = np.append(b, total_supply - total_demand)
@@ -49,23 +48,14 @@ def north_west_corner(a, b):
     print("------------------------")
     return X
 
-# Построение начальной таблицы
-X = north_west_corner(a.copy(), b.copy())
-print("Начальная транспортная таблица:")
-print(X)
-
 def calculate_potentials(X, C):
     m, n = X.shape
-    u = np.full(m, np.nan)  # Инициализируем u как массив NaN
-    v = np.full(n, np.nan)  # Инициализируем v как массив NaN
-    
-    # Начинаем с u[0] = 0
+    u = np.full(m, np.nan)
+    v = np.full(n, np.nan)
     u[0] = 0
 
-    # Список базисных клеток
     basis_cells = [(i, j) for i in range(m) for j in range(n) if X[i, j] > 0]
     
-
     while basis_cells:
         for i, j in basis_cells:
             if not np.isnan(u[i]) and np.isnan(v[j]):
@@ -85,10 +75,9 @@ def find_entering_cell(X, C, u, v):
     max_diff = 0
     entering_cell = None
     
-    # Проходим по всем небазисным клеткам
     for i in range(X.shape[0]):
         for j in range(X.shape[1]):
-            if X[i, j] == 0:  # Небазисная клетка
+            if X[i, j] == 0:
                 diff = u[i] + v[j] - C[i, j]
                 if diff > max_diff:
                     max_diff = diff
@@ -103,15 +92,14 @@ print(f"Начальная точка: {entering_cell}")
 def find_cycle(X, entering_cell):
     m, n = X.shape
     i0, j0 = entering_cell
-    path = [(i0, j0)]  # Начинаем с входящей клетки
-    visited = set()    # Множество посещённых клеток
+    path = [(i0, j0)]
+    visited = set()
 
     def dfs(i, j, step):
         if (i, j) == (i0, j0) and step > 0:
-            return True  # Цикл замкнулся
+            return True
 
         if step % 2 == 0:
-            # Двигаемся по строке (ищем столбцы)
             for j_next in range(n):
                 if j_next != j and (X[i, j_next] > 0 or (i, j_next) == (i0, j0)):
                     if (i, j_next) not in visited:
@@ -122,7 +110,6 @@ def find_cycle(X, entering_cell):
                         path.pop()
                         visited.remove((i, j_next))
         else:
-            # Двигаемся по столбцу (ищем строки)
             for i_next in range(m):
                 if i_next != i and (X[i_next, j] > 0 or (i_next, j) == (i0, j0)):
                     if (i_next, j) not in visited:
@@ -134,15 +121,27 @@ def find_cycle(X, entering_cell):
                         visited.remove((i_next, j))
         return False
 
-    # Запуск поиска
     dfs(i0, j0, 0)
     
-    # Удаляем последний элемент, чтобы избежать дублирования начальной точки
     if len(path) > 1 and path[-1] == path[0]:
         path.pop()
     
     return path
 
-# Пример использования
-cycle = find_cycle(X, entering_cell)
-print("Цикл:", cycle)
+def redistribute_supplies(X, cycle):
+    min_value = float('inf')
+    for idx, (i, j) in enumerate(cycle):
+        if idx % 2 == 1:
+            if X[i, j] < min_value:
+                min_value = X[i, j]
+
+    if min_value == float('inf'):
+        return X
+
+    for idx, (i, j) in enumerate(cycle):
+        if idx % 2 == 1:
+            X[i, j] -= min_value
+        else:
+            X[i, j] += min_value
+
+    return X
