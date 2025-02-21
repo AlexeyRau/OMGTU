@@ -21,7 +21,7 @@ if total_supply > total_demand:
 elif total_supply < total_demand:
     print("Открытая модель. Добавляем фиктивный склад.")
     a = np.append(a, total_demand - total_supply)
-    print(f"{total_demand} - {total_supply} = {a}, a{len(a)} = {a[len(a)-1]}")
+    print(f"{total_demand} - {total_supply} = {a[len(a)-1]}, a{len(a)} = {a[len(a)-1]}")
 else:
     print("Закрытая модель.")
 
