@@ -146,8 +146,7 @@ def is_optimal(u, v, C, X):
                     return False
     return True
 
-# Основная функция для решения транспортной задачи
-def transportation_problem(C, a, b):
+def transportation_task(C, a, b):
     X = north_west_corner(a, b)
     
     while True:
@@ -170,5 +169,4 @@ def transportation_problem(C, a, b):
         print("Новое решение:")
         print(X)
 
-# Запуск решения транспортной задачи
-transportation_problem(C, a, b)
+transportation_task(C, a, b)
