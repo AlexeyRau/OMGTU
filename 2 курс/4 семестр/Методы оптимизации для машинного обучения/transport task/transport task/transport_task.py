@@ -136,6 +136,11 @@ def find_cycle(X, entering_cell):
 
     # Запуск поиска
     dfs(i0, j0, 0)
+    
+    # Удаляем последний элемент, чтобы избежать дублирования начальной точки
+    if len(path) > 1 and path[-1] == path[0]:
+        path.pop()
+    
     return path
 
 # Пример использования
