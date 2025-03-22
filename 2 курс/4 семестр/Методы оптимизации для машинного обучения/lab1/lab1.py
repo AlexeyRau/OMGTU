@@ -44,28 +44,32 @@ def fibonacci_method(f, a, b, epsilon):
     return x_min, f(x_min)
 
 def golden_section_method(f, a, b, epsilon):
-    tau = 0.618
-    print(f"tau {tau}")
-    x1 = a + tau * (b - a)
-    x2 = b - tau * (b - a)
-    f1, f2 = f(x1), f(x2)
-
+    tau = (math.sqrt(5) - 1) / 2 
+    
+    x1 = a + (1 - tau) * (b - a)
+    x2 = a + tau * (b - a)
+    
+    f1 = f(x1)
+    f2 = f(x2)
+    
     while abs(b - a) > epsilon:
         if f1 > f2:
             a = x1
             x1 = x2
             f1 = f2
-            x2 = b - tau * (b - a)
+            x2 = a + tau * (b - a)
             f2 = f(x2)
         else:
             b = x2
             x2 = x1
             f2 = f1
-            x1 = a + tau * (b - a)
+            x1 = a + (1 - tau) * (b - a)
             f1 = f(x1)
-
+    
     x_min = (a + b) / 2
-    return x_min, f(x_min)
+    f_min = f(x_min) 
+    
+    return x_min, f_min
 
 def f(x):
     return x**4 / math.log(x)
