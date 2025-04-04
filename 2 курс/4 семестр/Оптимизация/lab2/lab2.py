@@ -1,100 +1,102 @@
 import numpy as np
 from scipy.optimize import minimize_scalar
 
-# Целевая функция (пример для варианта 1 из таблицы 2)
-def f(x, A=20, a=1, b=2):
-    return A - (x[0]-a)*np.exp(-(x[0]-a)) - (x[1]-b)*np.exp(-(x[1]-b))
-
-# Метод Гаусса-Зейделя (покоординатный спуск)
-def gauss_seidel(f, x0, epsilon=1e-6, max_iter=1000):
-    """
-    Алгоритм метода Гаусса-Зейделя из методички:
-    """
-    # Шаг 1: Задать точность ε > 0 и стартовую точку x⁰
-    x = np.array(x0, dtype=float)
-    n = len(x)
+def gauss_seidel(f, x0, epsilon, max_iter=1000):
+    
+    n = len(x0)
+    x_current = np.array(x0)
+    y = x_current.copy() # Принять y¹ = x¹
     k = 1
-    history = [x.copy()]
     
-    while True:
-        # Шаг 1: Принять y¹ = x⁰
-        y = x.copy()
-        
-        # Шаг 2: Последовательная минимизация по координатам (j=1..n)
-        for j in range(n):
-            # Шаг 2.1: Создать направление eⱼ
-            e = np.eye(n)[j]
+    for _ in range(max_iter):
+        j = 0                 
+        while j < n:
+            # Базисный вектор e_{j+1}
+            direction = np.zeros(n)
+            direction[j] = 1.0
             
-            # Шаг 2.2: Одномерный поиск min f(y⁽ʲ⁾ + λeⱼ)
-            res = minimize_scalar(lambda l: f(y + l*e))
-            l = res.x
+            # Одномерная минимизация
+            def func(lam):
+                return f(y + lam * direction)
             
-            # Шаг 2.3: Обновить y⁽ʲ⁺¹⁾ = y⁽ʲ⁾ + λⱼeⱼ
-            y[j] += l
-        
-        # Шаг 3: Принять x⁽ᵏ⁺¹⁾ = y⁽ⁿ⁺¹⁾
-        x_new = y.copy()
-        
-        # Шаг 4: Проверка условия остановки ||x⁽ᵏ⁺¹⁾ - x⁽ᵏ⁾|| < ε
-        if np.linalg.norm(x_new - x) < epsilon or k >= max_iter:
-            break
+            res = minimize_scalar(func)
+            lambda_opt = res.x
             
-        # Шаг 5: Обновить x⁽ᵏ⁾ и продолжить итерации
-        x = x_new.copy()
-        history.append(x.copy())
+            # Обновление y
+            y += lambda_opt * direction
+            j += 1             # j = j+1
+            
+            # Выход при достижении предела итераций
+            if j >= n: 
+                break
+
+        # Проверка условия останова
+        x_next = y.copy()
+        if np.linalg.norm(x_next - x_current) < epsilon:
+            return x_next
+        
+        # Подготовка к новой итерации (п.3 алгоритма)
+        x_current = x_next.copy()
+        y = x_current.copy()   # y¹ = x^{k+1}
         k += 1
-    
-    return x_new, f(x_new), history
 
-# Метод наискорейшего спуска
-def steepest_descent(f, x0, epsilon=1e-6, max_iter=1000, h=1e-6):
-    """
-    Алгоритм метода наискорейшего спуска из методички:
-    """
-    # Шаг 1: Задать ε > 0 и начальную точку x⁰
-    x = np.array(x0, dtype=float)
-    history = [x.copy()]
-    
-    for k in range(1, max_iter+1):
-        # Шаг 2: Вычислить градиент ∇f(x⁽ᵏ⁾) (численно)
-        grad = np.zeros_like(x)
-        for i in range(len(x)):
-            x_plus = x.copy()
-            x_plus[i] += h
-            x_minus = x.copy()
-            x_minus[i] -= h
-            grad[i] = (f(x_plus) - f(x_minus)) / (2*h)
-        
-        # Шаг 3: Проверить условие ||∇f(x⁽ᵏ⁾)|| < ε
-        if np.linalg.norm(grad) < epsilon:
-            break
-            
-        # Шаг 4: Определить направление S⁽ᵏ⁾ = -∇f(x⁽ᵏ⁾)
-        S = -grad
-        
-        # Шаг 5: Одномерная минимизация min f(x⁽ᵏ⁾ + λS⁽ᵏ⁾)
-        res = minimize_scalar(lambda l: f(x + l*S))
-        l = res.x
-        
-        # Шаг 6: Обновить x⁽ᵏ⁺¹⁾ = x⁽ᵏ⁾ + λS⁽ᵏ⁾
-        x = x + l*S
-        history.append(x.copy())
-    
-    return x, f(x), history
+    print("Достигнут лимит итераций")
+    return x_current
 
-# Пример использования
+def steepest_descent(f, grad_f, x0, epsilon=1e-6, max_iter=1000):
+    
+    x_current = np.array(x0, dtype=float)
+    k = 1
+    
+    for _ in range(max_iter):
+        # Вычисление нормы градиента
+        gradient = grad_f(x_current)
+        grad_norm = np.linalg.norm(gradient)
+        
+        # Проверка условия останова
+        if grad_norm < epsilon:
+            print(f"Сходимость достигнута на итерации {k}")
+            return x_current
+        
+        # Определение направления спуска
+        S = -gradient  # Направление наискорейшего спуска
+        
+        # Одномерная минимизация
+        def line_search(lam):
+            return f(x_current + lam * S)
+        
+        res = minimize_scalar(line_search)
+        lambda_opt = res.x
+        
+        # Обновление точки
+        x_next = x_current + lambda_opt * S
+        
+        # Подготовка к следующей итерации
+        x_current = x_next.copy()
+        k += 1
+
+    print("Достигнут максимальный лимит итераций")
+    return x_current
+
+
 if __name__ == "__main__":
-    x0 = [0.0, 0.0]
+    def test_function(x, A=20, a=1, b=2):
+        return A - (x[0]-a)*np.exp(-(x[0]-a)) - (x[1]-b)*np.exp(-(x[1]-b))
+    
+    def test_gradient(x, a=1, b=2):
+        dx0 = -np.exp(-(x[0]-a)) * (1 - (x[0]-a))
+        dx1 = -np.exp(-(x[1]-b)) * (1 - (x[1]-b))
+        return np.array([dx0, dx1])
+    
+    x0 = np.array([0.0, 0.0])
     epsilon = 1e-6
     
-    # Запуск метода Гаусса-Зейделя
-    gs_result = gauss_seidel(f, x0, epsilon)
-    print("Gauss-Seidel:")
-    print(f"Точка минимума: {gs_result[0]}")
-    print(f"Значение функции: {gs_result[1]:.6f}")
-    
-    # Запуск метода наискорейшего спуска
-    sd_result = steepest_descent(f, x0, epsilon)
-    print("\nSteepest Descent:")
-    print(f"Точка минимума: {sd_result[0]}")
-    print(f"Значение функции: {sd_result[1]:.6f}")
+    result = gauss_seidel(test_function, x0, epsilon)
+    print("метод Гаусса-Зейделя:")
+    print(f"Оптимальная точка: {result}")
+    print(f"Значение функции: {test_function(result)}")
+    print("------------------------------------------------------")
+    result = steepest_descent(test_function, test_gradient, x0, epsilon)
+    print("метод наискорейшего спуска:")
+    print(f"Оптимальная точка: {result}")
+    print(f"Значение функции: {test_function(result)}")
