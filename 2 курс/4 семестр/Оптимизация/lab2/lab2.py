@@ -5,7 +5,7 @@ def gauss_seidel(f, x0, epsilon, max_iter=1000):
     
     n = len(x0)
     x_current = np.array(x0)
-    y = x_current.copy() # Принять y¹ = x¹
+    y = x_current.copy() 
     k = 1
     
     for _ in range(max_iter):
@@ -22,22 +22,18 @@ def gauss_seidel(f, x0, epsilon, max_iter=1000):
             res = minimize_scalar(func)
             lambda_opt = res.x
             
-            # Обновление y
             y += lambda_opt * direction
-            j += 1             # j = j+1
+            j += 1             
             
-            # Выход при достижении предела итераций
             if j >= n: 
                 break
 
-        # Проверка условия останова
         x_next = y.copy()
         if np.linalg.norm(x_next - x_current) < epsilon:
             return x_next
         
-        # Подготовка к новой итерации (п.3 алгоритма)
         x_current = x_next.copy()
-        y = x_current.copy()   # y¹ = x^{k+1}
+        y = x_current.copy()
         k += 1
 
     print("Достигнут лимит итераций")
@@ -49,17 +45,15 @@ def steepest_descent(f, grad_f, x0, epsilon=1e-6, max_iter=1000):
     k = 1
     
     for _ in range(max_iter):
-        # Вычисление нормы градиента
+        
         gradient = grad_f(x_current)
         grad_norm = np.linalg.norm(gradient)
         
-        # Проверка условия останова
         if grad_norm < epsilon:
             print(f"Сходимость достигнута на итерации {k}")
             return x_current
         
-        # Определение направления спуска
-        S = -gradient  # Направление наискорейшего спуска
+        S = -gradient  
         
         # Одномерная минимизация
         def line_search(lam):
@@ -68,10 +62,8 @@ def steepest_descent(f, grad_f, x0, epsilon=1e-6, max_iter=1000):
         res = minimize_scalar(line_search)
         lambda_opt = res.x
         
-        # Обновление точки
         x_next = x_current + lambda_opt * S
         
-        # Подготовка к следующей итерации
         x_current = x_next.copy()
         k += 1
 
