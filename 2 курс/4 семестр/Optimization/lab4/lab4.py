@@ -1,11 +1,59 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from math import log
+import numpy as np
+import matplotlib.pyplot as plt
+from math import log
+from mpl_toolkits.mplot3d import Axes3D
 
+def plot_optimization_process(history, method_name, constraints):
+    """Визуализация процесса оптимизации"""
+    history = np.array(history)
+    
+    # График траектории оптимизации
+    plt.figure(figsize=(12, 5))
+    
+    # 1. Траектория в пространстве переменных
+    plt.subplot(1, 2, 1)
+    plt.plot(history[:, 0], history[:, 1], 'bo-', label='Траектория')
+    plt.scatter(history[0, 0], history[0, 1], c='r', label='Начальная точка')
+    plt.scatter(history[-1, 0], history[-1, 1], c='g', label='Конечная точка')
+    plt.xlabel('x1')
+    plt.ylabel('x2')
+    plt.title(f'{method_name}: Траектория оптимизации')
+    plt.legend()
+    plt.grid(True)
+    
+    # 2. Изменение значений ограничений
+    plt.subplot(1, 2, 2)
+    g_values = np.array([[g(x) for g in constraints] for x in history])
+    for i in range(len(constraints)):
+        plt.plot(g_values[:, i], label=f'g{i+1}(x)')
+    plt.axhline(0, color='k', linestyle='--')
+    plt.xlabel('Итерация')
+    plt.ylabel('Значение ограничения')
+    plt.title(f'{method_name}: Ограничения')
+    plt.legend()
+    plt.grid(True)
+    
+    plt.tight_layout()
+    plt.show()
+    
+    # 3. График изменения целевой функции
+    plt.figure(figsize=(8, 5))
+    f_values = [f(x) for x in history]
+    plt.plot(f_values, 'r-', label='Целевая функция')
+    plt.xlabel('Итерация')
+    plt.ylabel('f(x)')
+    plt.title(f'{method_name}: Изменение целевой функции')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+"""
+Штрафы
+"""
 def penalty_method(f, grad_f, constraints, grad_constraints, x0, epsilon=0.05, alpha=0.001, max_iter=1000, max_k=1e6):
-    """
-    Улучшенная реализация метода штрафных функций с защитой от переполнения
-    """
     x = np.array(x0, dtype=float)
     k = 1.0
     iter_count = 0
@@ -19,7 +67,7 @@ def penalty_method(f, grad_f, constraints, grad_constraints, x0, epsilon=0.05, a
             
             for g, grad_g in zip(constraints, grad_constraints):
                 violation = max(0.0, -g(x))
-                penalty += k * violation
+                penalty += k * violation    
                 
                 if violation > 0:
                     grad_penalty += k * (-grad_g(x))
@@ -52,7 +100,7 @@ def penalty_method(f, grad_f, constraints, grad_constraints, x0, epsilon=0.05, a
 
 def barrier_method(f, grad_f, constraints, grad_constraints, x0, M=1000.0, epsilon=0.05, alpha=0.001, max_iter=1000):
     """
-    Реализация метода барьерных функций с защитой от выхода за допустимую область
+    Барьеры
     """
     x = np.array(x0, dtype=float)
     iter_count = 0
@@ -154,26 +202,45 @@ print(f"Найденное решение: {x_barrier}")
 print(f"Значение функции: {f(x_barrier):.2f}")
 print(f"Проверка ограничений: g1={g1(x_barrier):.2f}, g2={g2(x_barrier):.2f}, g3={g3(x_barrier):.2f}")
 
-# Визуализация
-plt.figure(figsize=(12, 6))
+# После вызовов методов добавим визуализацию
+print("\nВизуализация метода штрафных функций:")
+plot_optimization_process(history_penalty, "Метод штрафных функций", constraints)
 
-plt.subplot(1, 2, 1)
-history_penalty = np.array(history_penalty)
-plt.plot(history_penalty[:, 0], history_penalty[:, 1], 'o-', label='Метод штрафов')
-plt.title('Метод штрафных функций')
-plt.xlabel('x1')
-plt.ylabel('x2')
-plt.grid()
-plt.legend()
+print("\nВизуализация метода барьерных функций:")
+plot_optimization_process(history_barrier, "Метод барьерных функций", constraints)
 
-plt.subplot(1, 2, 2)
-history_barrier = np.array(history_barrier)
-plt.plot(history_barrier[:, 0], history_barrier[:, 1], 'o-', label='Метод барьеров')
-plt.title('Метод барьерных функций')
-plt.xlabel('x1')
-plt.ylabel('x2')
-plt.grid()
-plt.legend()
+# Дополнительная 3D визуализация функции с ограничениями
+def plot_3d_function():
+    fig = plt.figure(figsize=(12, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    
+    # Создаем сетку для построения
+    x1 = np.linspace(0, 5, 100)
+    x2 = np.linspace(0, 5, 100)
+    X1, X2 = np.meshgrid(x1, x2)
+    Z = f([X1, X2])
+    
+    # Ограничение g1(x) >= 0
+    g1_val = g1([X1, X2])
+    Z[g1_val < 0] = np.nan  # Скрываем точки, где ограничение нарушено
+    
+    # Построение поверхности
+    surf = ax.plot_surface(X1, X2, Z, cmap='viridis', alpha=0.7)
+    
+    # Траектории оптимизации
+    hist_pen = np.array(history_penalty)
+    hist_bar = np.array(history_barrier)
+    
+    ax.plot(hist_pen[:, 0], hist_pen[:, 1], [f(x) for x in hist_pen], 
+            'r-', linewidth=2, label='Штрафной метод')
+    ax.plot(hist_bar[:, 0], hist_bar[:, 1], [f(x) for x in hist_bar], 
+            'b-', linewidth=2, label='Барьерный метод')
+    
+    ax.set_xlabel('x1')
+    ax.set_ylabel('x2')
+    ax.set_zlabel('f(x)')
+    ax.set_title('3D визуализация функции с ограничениями и траекториями оптимизации')
+    plt.legend()
+    plt.show()
 
-plt.tight_layout()
-plt.show()
+plot_3d_function()
