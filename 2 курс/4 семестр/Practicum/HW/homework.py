@@ -204,10 +204,10 @@ class World:
         self.width = width
         self.height = height
         self.grid = [[None for _ in range(width)] for _ in range(height)]
-        self.hour = 4  # Стартовое время
+        self.hour = 0  # Стартовое время
         self.time_of_day = self._calculate_time_of_day()
         self.entities = []
-        self.snapshots = {}  # Словарь для хранения снимков состояния
+        self.snapshots = {}
 
     def _calculate_time_of_day(self):
         if 6 <= self.hour < 12:
@@ -220,7 +220,6 @@ class World:
             return TimeOfDay.NIGHT
 
     def take_snapshot(self):
-        """Создает снимок текущего состояния мира"""
         snapshot = {
             'hour': self.hour,
             'time_of_day': self.time_of_day,
@@ -228,7 +227,6 @@ class World:
             'grid': [[None for _ in range(self.width)] for _ in range(self.height)]
         }
         
-        # Сохраняем состояние всех сущностей
         for entity in self.entities:
             ent_data = {
                 'class': entity.__class__.__name__,
@@ -245,7 +243,6 @@ class World:
             
             snapshot['entities'].append(ent_data)
             
-            # Сохраняем положение в сетке
             snapshot['grid'][entity.y][entity.x] = ent_data
         
         self.snapshots[self.hour] = snapshot
