@@ -4,16 +4,16 @@ m = len(alphabet)
 def prepare_text(text):
     result = []
     for b_i in text.lower():
+        if b_i == 'ё':
+            result.append('е')
         if b_i in alphabet:
             result.append(b_i)
     return ''.join(result)
 
-def symbol_to_num(symbol):
-    """Преобразование символа в код (0-31)"""
+def symbol_to_num(symbol): # символ в номер
     return alphabet.index(symbol)
 
-def num_to_symbol(num):
-    """Преобразование кода (0-31) в символ"""
+def num_to_symbol(num): # номер в символ
     return alphabet[num % m]
 
 def encrypt(text, k):
@@ -60,9 +60,34 @@ def brute_force(ciphertext):
     return results
 
 def save_to_file(filename, data):
-    """Сохранение данных в файл"""
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(data)
+
+def get_text_input():
+    print("\nВыберите способ ввода текста:")
+    print("1. Ввод с консоли")
+    print("2. Чтение из файла")
+    
+    choice = input("Ваш выбор (1-2): ").strip()
+    
+    if choice == '1':
+        return input("Введите текст: ")
+    elif choice == '2':
+        filename = input("Введите имя файла: ")
+        return read_from_file(filename)
+    else:
+        print("Неверный выбор!")
+        return None
+
+def read_from_file(filename):
+    """Чтение текста из файла"""
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        print(f"Файл {filename} не найден!")
+        return None
+
 
 def main():
     print("Шифр Цезаря - Лабораторная работа")
@@ -78,7 +103,10 @@ def main():
         choice = input("Ваш выбор (1-4): ").strip()
         
         if choice == '1':
-            text = input("Введите текст для шифрования: ")
+            text = get_text_input()
+            if text is None:
+                continue
+                
             try:
                 key = int(input("Введите ключ (1-31): "))
                 if not 1 <= key <= 31:
@@ -103,8 +131,10 @@ def main():
             print("Результат сохранен в файл 'encryption_result.txt'")
             
         elif choice == '2':
-            # Расшифрование
-            text = input("Введите текст для расшифрования: ")
+            text = get_text_input()
+            if text is None:
+                continue
+                
             try:
                 key = int(input("Введите ключ (1-31): "))
                 if not 1 <= key <= 31:
@@ -137,7 +167,26 @@ def main():
             
             print("Все варианты расшифровки сохранены в файл 'brute_force_results.txt'")
 
-            key, text = results[9]
+            right_key = 1
+
+            print("Выберите подходящий вариант расшифровки:")
+            for key, decrypted in results:
+                print(f"Ключ: {key}")
+                print(f"Расшифровка: {decrypted}")
+                print("\nВыбрать этот вариант расшифровки?:")
+                print("1. Да")
+                print("2. Нет")
+                choice = input("Ваш выбор (1-2): ").strip()
+                if choice == '1':
+                    right_key = key
+                    break
+                elif choice == '2':
+                    continue
+                else:
+                    print("Неверный выбор.")
+                    break
+
+            key, text = results[right_key - 1]
             author_work = "лермонтовсмертьпоэта"
             encrypted_author_work = encrypt(author_work, 10)
 
