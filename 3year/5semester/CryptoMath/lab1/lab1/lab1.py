@@ -1,12 +1,20 @@
+import os
+import tkinter as tk
+from tkinter import filedialog
+import matplotlib
+matplotlib.use('TkAgg') 
+
+dir_path = "A:\\OMGTU\\OMGTU\\3year\\5semester\\CryptoMath\\lab1\\lab1"
+
 alphabet = 'абвгдежзийклмнопрстуфхцчшщъыьэюя'
 m = len(alphabet)
 
-def prepare_text(text):
+def prepare_text(text): #подготовка текста
     result = []
     for b_i in text.lower():
         if b_i == 'ё':
             result.append('е')
-        if b_i in alphabet:
+        elif b_i in alphabet:
             result.append(b_i)
     return ''.join(result)
 
@@ -16,7 +24,7 @@ def symbol_to_num(symbol): # символ в номер
 def num_to_symbol(num): # номер в символ
     return alphabet[num % m]
 
-def encrypt(text, k):
+def encrypt(text, k): #зашифровка
     encrypted_codes = []
     for b_i in text:
         if b_i in alphabet:
@@ -34,7 +42,7 @@ def encrypt(text, k):
             result.append(item)
     return ''.join(result)
 
-def decrypt(text, k):
+def decrypt(text, k): # расшифровка
     decrypted_codes = []
     for sym in text:
         if sym in alphabet:
@@ -60,7 +68,8 @@ def brute_force(ciphertext):
     return results
 
 def save_to_file(filename, data):
-    with open(filename, 'w', encoding='utf-8') as f:
+    full_path = os.path.join(dir_path, filename)
+    with open(full_path, 'w', encoding='utf-8') as f:
         f.write(data)
 
 def get_text_input():
@@ -73,21 +82,38 @@ def get_text_input():
     if choice == '1':
         return input("Введите текст: ")
     elif choice == '2':
-        filename = input("Введите имя файла: ")
-        return read_from_file(filename)
+        return read_from_file_dialog()
     else:
         print("Неверный выбор!")
         return None
 
-def read_from_file(filename):
-    """Чтение текста из файла"""
+def read_from_file_dialog():
     try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            return f.read().strip()
-    except FileNotFoundError:
-        print(f"Файл {filename} не найден!")
+        root = tk.Tk()
+        root.withdraw() 
+        root.attributes('-topmost', True) 
+        
+        file_path = filedialog.askopenfilename(
+            title="Выберите текстовый файл",
+            filetypes=[("Текстовые файлы", "*.txt"), ("Все файлы", "*.*")]
+        )
+        
+        root.destroy()
+        
+        if not file_path:
+            print("Выбор файла отменен.")
+            return None
+        
+        print(f"Выбран файл: {file_path}")
+        
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read().strip()
+            print(f"Файл успешно прочитан. Размер: {len(content)} символов")
+            return content
+            
+    except Exception as e:
+        print(f"Ошибка при чтении файла: {e}")
         return None
-
 
 def main():
     print("Шифр Цезаря - Лабораторная работа")
@@ -123,12 +149,13 @@ def main():
             result += f"Подготовленный текст: {prepared_text}\n"
             result += f"Ключ: {key}\n"
             result += f"Зашифрованный текст: {encrypted_text}\n"
-            
-            print("\nРезультат:")
+            print("\n=================================================")
+            print("Результат:")
             print(result)
             
             save_to_file('encryption_result.txt', result)
             print("Результат сохранен в файл 'encryption_result.txt'")
+            print("=================================================")
             
         elif choice == '2':
             text = get_text_input()
@@ -144,33 +171,37 @@ def main():
                 print("Ключ должен быть числом!")
                 continue
             
-            decrypted_text = decrypt(text, key)
+            prepared_text = prepare_text(text)
+            decrypted_text = decrypt(prepared_text, key)
             
-            result = f"Зашифрованный текст: {text}\n"
+            result = f"Исходный текст: {text}\n"
+            result += f"Подготовленный текст: {prepared_text}\n"
             result += f"Ключ: {key}\n"
             result += f"Расшифрованный текст: {decrypted_text}\n"
-            
-            print("\nРезультат:")
+            print("\n=================================================")
+            print("Результат:")
             print(result)
             
             save_to_file('decryption_result.txt', result)
             print("Результат сохранен в файл 'decryption_result.txt'")
+            print("=================================================")
             
         elif choice == '3':
             ciphertext_variant_14 = "чпмечпыхкоэвкщшзькщшсшъкцпхшбчеяшлтомшыыькхшчщъшьтмцчпчтуымпькшотчфкфщъпроптэлть"
-            
+            data = ""
             results = brute_force(ciphertext_variant_14)
-            
-            with open('brute_force_results.txt', 'w', encoding='utf-8') as f:
-                for key, decrypted in results:
-                    f.write(f"Ключ {key}: {decrypted}\n")
-            
+            for key, decrypted in results:
+                data += f"Ключ {key}: {decrypted}\n"
+            save_to_file('brute_force_results.txt', data)
             print("Все варианты расшифровки сохранены в файл 'brute_force_results.txt'")
 
             right_key = 1
 
-            print("Выберите подходящий вариант расшифровки:")
+            print("\n=================================================")
+            print("\nВыберите подходящий вариант расшифровки:")
             for key, decrypted in results:
+
+                print("\n=================================================")
                 print(f"Ключ: {key}")
                 print(f"Расшифровка: {decrypted}")
                 print("\nВыбрать этот вариант расшифровки?:")
@@ -185,17 +216,20 @@ def main():
                 else:
                     print("Неверный выбор.")
                     break
+                
 
             key, text = results[right_key - 1]
             author_work = "лермонтовсмертьпоэта"
             encrypted_author_work = encrypt(author_work, 10)
 
+            print("=================================================")
             print("Ответ на задание 3, вариант 14:")
             print(f"ШИФР-ТЕКСТ: {ciphertext_variant_14}")
             print(f"РАСШИФРОВАННЫЙ ТЕКСТ: {text}")
             print(f"КЛЮЧ: {key}")
             print(f"АВТОР И ПРОИЗВЕДЕНИЕ: {author_work}")
             print(f"ЗАШИФРОВАННЫЕ ФАМИЛИЯ И НАЗВАНИЕ: {encrypted_author_work}")
+            print("=================================================")
 
         elif choice == '4':
             print("Выход из программы.")
