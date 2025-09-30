@@ -4,27 +4,27 @@ from tkinter import filedialog
 import matplotlib
 matplotlib.use('TkAgg') 
 
-dir_path = "A:\\OMGTU\\OMGTU\\3year\\5semester\\CryptoMath\\lab1\\lab1"
+dir_path = "D:\\OMGTU\\OMGTU\\3year\\5semester\\CryptoMath\\lab1\\lab1"
 
 alphabet = 'абвгдежзийклмнопрстуфхцчшщъыьэюя'
 m = len(alphabet)
 
-def prepare_text(text): #подготовка текста
+def prepare_text(text):
     result = []
     for b_i in text.lower():
         if b_i == 'ё':
             result.append('е')
-        elif b_i in alphabet:
+        elif b_i != ' ':
             result.append(b_i)
     return ''.join(result)
 
-def symbol_to_num(symbol): # символ в номер
+def symbol_to_num(symbol):
     return alphabet.index(symbol)
 
-def num_to_symbol(num): # номер в символ
+def num_to_symbol(num):
     return alphabet[num % m]
 
-def encrypt(text, k): #зашифровка
+def encrypt(text, k):
     encrypted_codes = []
     for b_i in text:
         if b_i in alphabet:
@@ -42,7 +42,7 @@ def encrypt(text, k): #зашифровка
             result.append(item)
     return ''.join(result)
 
-def decrypt(text, k): # расшифровка
+def decrypt(text, k):
     decrypted_codes = []
     for sym in text:
         if sym in alphabet:
@@ -152,11 +152,21 @@ def main():
             print("\n=================================================")
             print("Результат:")
             print(result)
-            
-            save_to_file('encryption_result.txt', result)
-            print("Результат сохранен в файл 'encryption_result.txt'")
-            print("=================================================")
-            
+            print("Хотите сохранить файл?")
+            print("1. Да")
+            print("2. Нет")
+            save_choice = input("Ваш выбор (1-2): ")
+            if save_choice == '1':
+                filename = input("Введите имя файла для сохранения: ")
+                save_to_file(filename, encrypted_text)
+                print(f"Результат сохранен в файл '{filename}'")
+                print("=================================================")
+            elif save_choice == '2':
+                print("=================================================")
+            else:
+                print("Неверный выбор. Попробуйте снова.")    
+                print("=================================================")
+                    
         elif choice == '2':
             text = get_text_input()
             if text is None:
@@ -181,10 +191,20 @@ def main():
             print("\n=================================================")
             print("Результат:")
             print(result)
-            
-            save_to_file('decryption_result.txt', result)
-            print("Результат сохранен в файл 'decryption_result.txt'")
-            print("=================================================")
+            print("Хотите сохранить файл?")
+            print("1. Да")
+            print("2. Нет")
+            save_choice = input("Ваш выбор (1-2): ")
+            if save_choice == '1':
+                filename = input("Введите имя файла для сохранения: ")
+                save_to_file(filename, decrypted_text)
+                print(f"Результат сохранен в файл '{filename}'")
+                print("=================================================")
+            elif save_choice == '2':
+                print("=================================================")
+            else:
+                print("Неверный выбор. Попробуйте снова.")    
+                print("=================================================")
             
         elif choice == '3':
             ciphertext_variant_14 = "чпмечпыхкоэвкщшзькщшсшъкцпхшбчеяшлтомшыыькхшчщъшьтмцчпчтуымпькшотчфкфщъпроптэлть"
@@ -192,8 +212,21 @@ def main():
             results = brute_force(ciphertext_variant_14)
             for key, decrypted in results:
                 data += f"Ключ {key}: {decrypted}\n"
-            save_to_file('brute_force_results.txt', data)
-            print("Все варианты расшифровки сохранены в файл 'brute_force_results.txt'")
+            
+            print("Хотите сохранить все варианты расшифровки в файл?")
+            print("1. Да")
+            print("2. Нет")
+            save_choice = input("Ваш выбор (1-2): ")
+            if save_choice == '1':
+                filename = input("Введите имя файла для сохранения: ")
+                save_to_file(filename, data)
+                print(f"Результат сохранен в файл '{filename}'")
+                print("=================================================")
+            elif save_choice == '2':
+                print("=================================================")
+            else:
+                print("Неверный выбор. Попробуйте снова.")    
+                print("=================================================")
 
             right_key = 1
 
@@ -221,7 +254,7 @@ def main():
             key, text = results[right_key - 1]
             author_work = "лермонтовсмертьпоэта"
             encrypted_author_work = encrypt(author_work, 10)
-
+            
             print("=================================================")
             print("Ответ на задание 3, вариант 14:")
             print(f"ШИФР-ТЕКСТ: {ciphertext_variant_14}")
