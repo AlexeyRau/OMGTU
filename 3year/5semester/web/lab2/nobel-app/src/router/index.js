@@ -1,16 +1,24 @@
+import Prizes from '@/views/Prizes.vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import Prizes from '../views/Prizes.vue'
-import Laureates from '../views/Laureates.vue'
-
-const routes = [
-  { path: '/', redirect: '/prizes' },
-  { path: '/prizes', component: Prizes },
-  { path: '/laureates', component: Laureates }
-]
 
 const router = createRouter({
-  history: createWebHistory(),
-  routes
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    {
+      path: '/', 
+      redirect: '/prizes'
+    },
+    {
+      path: '/prizes', 
+      name: 'prizes', 
+      component: () => import('@/views/Prizes.vue')
+    },
+    {
+      path: '/laureates', 
+      name: 'laureats', 
+      component: () => import('@/views/Laureates.vue')
+    }
+  ]
 })
 
 export default router
