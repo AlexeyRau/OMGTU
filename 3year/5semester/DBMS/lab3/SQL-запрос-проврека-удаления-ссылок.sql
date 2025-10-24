@@ -1,0 +1,1 @@
+DELETE FROM Categories WHERE cat_id = 7;
