@@ -5,8 +5,9 @@ import matplotlib
 matplotlib.use('TkAgg')
 from collections import Counter
 import math
+from datetime import datetime
 
-dir_path = "A:\\OMGTU\\OMGTU\\3year\\5semester\\CryptoMath\\lab2\\lab2"
+dir_path = "D:\\OMGTU\\OMGTU\\3year\\5semester\\CryptoMath\\lab2\\lab2"
 
 alphabet = 'абвгдежзийклмнопрстуфхцчшщъыьэюя'
 m = len(alphabet)
@@ -145,6 +146,107 @@ def read_from_file_dialog():
         print(f"Ошибка при чтении файла: {e}")
         return None
 
+
+def find_gcd_and_bezout(a, b):
+    """Нахождение НОД и коэффициентов Безу с преобразованием отрицательных коэффициентов"""
+    gcd, x, y = extended_gcd(a, b)
+    print(f"Коэффициенты Безу: x = {x}, y = {y}")
+    print(f"Проверка: {a}*{x} + {b}*{y} = {a*x + b*y}")
+    if x < 0:
+        print(f"Коэффициент x = {x} - отрицательный, берём место него наименьший отрицательный вычет")
+        x = x % b
+        y = (gcd - a * x) // b
+    
+    elif y < 0:
+        print(f"Коэффициент y = {y} - отрицательный, берём место него наименьший отрицательный вычет")
+        y = y % a
+        x = (gcd - b * y) // a
+    
+    return gcd, x, y
+
+def modular_arithmetic_menu():
+    """Меню для проверки модульной арифметики"""
+    while True:
+        print("\n" + "="*50)
+        print("ПРОВЕРКА МОДУЛЬНОЙ АРИФМЕТИКИ")
+        print("1. Нахождение НОД и коэффициентов Безу")
+        print("2. Поиск обратного элемента")
+        print("3. Решение линейного сравнения")
+        print("4. Решение системы сравнений")
+        print("5. Назад в главное меню")
+        
+        choice = input("\nВаш выбор (1-5): ").strip()
+        
+        if choice == '1':
+            try:
+                a = int(input("Введите первое число a: "))
+                b = int(input("Введите второе число b: "))
+                
+                gcd, x, y = find_gcd_and_bezout(a, b)
+                
+                print(f"\nНОД({a}, {b}) = {gcd}")
+                
+            except ValueError:
+                print("Введите корректные числа!")
+                
+        elif choice == '2':
+            try:
+                a = int(input("Введите элемент a: "))
+                modulus = int(input("Введите модуль m: "))
+                
+                inverse = mod_inverse(a, modulus)
+                
+                if inverse is None:
+                    print(f"Обратный элемент для {a} mod {modulus} не существует")
+                else:
+                    print(f"Обратный элемент для {a} mod {modulus}: {inverse}")
+                    print(f"Проверка: {a} * {inverse} mod {modulus} = {(a * inverse) % modulus}")
+                    
+            except ValueError:
+                print("Введите корректные числа!")
+                
+        elif choice == '3':
+            try:
+                a = int(input("Введите a: "))
+                b = int(input("Введите b: "))
+                modulus = int(input("Введите модуль m: "))
+                
+                solutions = solve_linear_congruence(a, b, modulus)
+                
+                if not solutions:
+                    print(f"Сравнение {a}x ≡ {b} (mod {modulus}) не имеет решений")
+                else:
+                    print(f"Решения сравнения {a}x ≡ {b} (mod {modulus}): {solutions}")
+                    
+            except ValueError:
+                print("Введите корректные числа!")
+                
+        elif choice == '4':
+            try:
+                a = int(input("Введите a (из первого уравнения): "))
+                b1 = int(input("Введите b (из первого уравнения): "))
+                c = int(input("Введите c (из второго уравнения): "))
+                d = int(input("Введите d (из второго уравнения): "))
+                modulus = int(input("Введите модуль m: "))
+                
+                solutions = solve_system_of_congruences(a, c, b1, d, modulus)
+                
+                if not solutions:
+                    print("Система не имеет решений")
+                else:
+                    print("Решения системы:")
+                    for i, (x, y) in enumerate(solutions, 1):
+                        print(f"Решение {i}: x = {x}, y = {y}")
+                        
+            except ValueError:
+                print("Введите корректные числа!")
+                
+        elif choice == '5':
+            break
+            
+        else:
+            print("Неверный выбор! Попробуйте снова.")
+
 def frequency_analysis(text):
     """Анализ частот символов в тексте"""
     prepared = prepare_text(text)
@@ -186,37 +288,37 @@ def generate_hypotheses(freq_list, max_hypotheses=10):
     
     return hypotheses
 
-def crack_affine_cipher(ciphertext):
-    """Криптоанализ аффинного шифра"""
+def crack_affine_cipher(ciphertext, add_to_protocol):
+    """Криптоанализ аффинного шифра с возможностью прерывания"""
     prepared_cipher = prepare_text(ciphertext)
     
     freq_list = frequency_analysis(prepared_cipher)
     
-    print("\n" + "="*50)
-    print("РЕЗУЛЬТАТЫ ЧАСТОТНОГО АНАЛИЗА:")
-    print("Символ | Количество | Процент")
-    print("-" * 30)
+    add_to_protocol("\n" + "="*50)
+    add_to_protocol("РЕЗУЛЬТАТЫ ЧАСТОТНОГО АНАЛИЗА:")
+    add_to_protocol("Символ | Количество | Процент")
+    add_to_protocol("-" * 30)
     for char, count, perc in freq_list[:10]: 
-        print(f"  {char}    |     {count}     |   {perc:.2f}%")
+        add_to_protocol(f"  {char}    |     {count}     |   {perc:.2f}%")
     
     hypotheses = generate_hypotheses(freq_list)
     
-    print(f"\nСгенерировано {len(hypotheses)} гипотез")
+    add_to_protocol(f"\nСгенерировано {len(hypotheses)} гипотез")
     
     results = []
     
     for i, hypothesis in enumerate(hypotheses, 1):
-        print(f"\n--- Проверка гипотезы {i}: {hypothesis['description']}")
+        add_to_protocol(f"\n--- Проверка гипотезы {i}: {hypothesis['description']}")
         
-        y1 = symbol_to_num(hypothesis['cipher_chars'][0])  # Зашифрованная буква 1
-        y2 = symbol_to_num(hypothesis['cipher_chars'][1])  # Зашифрованная буква 2
-        x1 = symbol_to_num(hypothesis['plain_chars'][0])   # Открытая буква 1
-        x2 = symbol_to_num(hypothesis['plain_chars'][1])   # Открытая буква 2
+        y1 = symbol_to_num(hypothesis['cipher_chars'][0])
+        y2 = symbol_to_num(hypothesis['cipher_chars'][1])
+        x1 = symbol_to_num(hypothesis['plain_chars'][0])
+        x2 = symbol_to_num(hypothesis['plain_chars'][1])
         
         solutions = solve_system_of_congruences(x1, x2, y1, y2, m)
         
         if not solutions:
-            print("  Система не имеет решений")
+            add_to_protocol("  Система не имеет решений")
             continue
         
         for a, b in solutions:
@@ -234,19 +336,27 @@ def crack_affine_cipher(ciphertext):
                 }
                 results.append(result)
                 
-                print(f"  Найден ключ: a={a}, b={b}")
-                print(f"  Расшифрованный текст: {decrypted[:100]}...")  
+                add_to_protocol(f"  Найден ключ: a={a}, b={b}")
+                add_to_protocol(f"  Расшифрованный текст: {decrypted[:100]}...")  
                 
                 choice = input("  Сохранить этот вариант? (y/n): ").strip().lower()
                 if choice == 'y':
-                    filename = f"decrypted_a{a}_b{b}.txt"
+                    filename = input("  Введите название файла (без расширения): ") + ".txt"
                     save_to_file(filename, decrypted)
-                    print(f"  Текст сохранен в файл: {filename}")
+                    add_to_protocol(f"  Текст сохранен в файл: {filename}")
+                    
+                    stop_choice = input("  Прервать поиск? (y/n): ").strip().lower()
+                    if stop_choice == 'y':
+                        add_to_protocol("  Перебор прерван пользователем")
+                        print("  Перебор прерван пользователем")
+                        return results, freq_list, True
                 
             except Exception as e:
-                print(f"  Ошибка при расшифровке: {e}")
+                error_msg = f"  Ошибка при расшифровке: {e}"
+                add_to_protocol(error_msg)
+                print(error_msg)
     
-    return results, freq_list
+    return results, freq_list, False
 
 def crypto_analysis_menu():
     """Меню для криптоанализа"""
@@ -264,11 +374,47 @@ def crypto_analysis_menu():
         print(text)
         protocol_content.append(text)
     
-    results, freq_list = crack_affine_cipher(ciphertext)
+    add_to_protocol("ПРОТОКОЛ КРИПТОАНАЛИЗА АФФИННОГО ШИФРА")
+    add_to_protocol("=" * 50)
+    add_to_protocol(f"Исходный шифртекст: {ciphertext[:100]}...")
+    add_to_protocol(f"Длина шифртекста: {len(ciphertext)} символов")
+    add_to_protocol(f"Дата анализа: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    results, freq_list, interrupted = crack_affine_cipher(ciphertext, add_to_protocol)
+    
+    add_to_protocol("\n" + "="*50)
+    add_to_protocol("ИТОГИ КРИПТОАНАЛИЗА:")
+    
+    if interrupted:
+        add_to_protocol("✓ Перебор был прерван пользователем")
+    else:
+        add_to_protocol("✗ Перебор завершен")
+    
+    if results:
+        add_to_protocol(f"Найдено {len(results)} возможных вариантов расшифровки:")
+        for i, result in enumerate(results, 1):
+            add_to_protocol(f"  {i}. Ключ: a={result['key'][0]}, b={result['key'][1]}")
+            add_to_protocol(f"     Гипотеза: {result['hypothesis']}")
+            add_to_protocol(f"     Текст: {result['decrypted'][:50]}...")
+    else:
+        add_to_protocol("Варианты расшифровки не найдены")
     
     protocol_text = "\n".join(protocol_content)
     save_to_file(protocol_filename, protocol_text)
     print(f"\nПротокол сохранен в файл: {protocol_filename}")
+    
+    print("\n" + "="*50)
+    print("ИТОГИ КРИПТОАНАЛИЗА:")
+    if interrupted:
+        print("✓ Перебор был прерван пользователем")
+    else:
+        print("✗ Перебор завершен")
+    
+    if results:
+        print(f"Найдено {len(results)} возможных вариантов расшифровки")
+        print("Сохраненные файлы:")
+        for i, result in enumerate(results, 1):
+            print(f"  {i}. Ключ: a={result['key'][0]}, b={result['key'][1]}")
 
 def frequency_analysis_menu():
     """Меню для частотного анализа"""
@@ -301,18 +447,19 @@ def main():
     while True:
         print("\n"+"="*50)
         print("ВЫБЕРИТЕ ДЕЙСТВИЕ:")
-        print("1. Шифрование аффинным шифром")
-        print("2. Расшифрование аффинным шифром")
-        print("3. Нахождение обратного элемента")
-        print("4. Решение линейного сравнения")
-        print("5. Решение системы сравнений")
-        print("6. Частотный анализ текста")
-        print("7. Криптоанализ аффинного шифра")
-        print("8. Выход")
+        print("1. Проверка модульной арифметики")
+        print("2. Шифрование аффинным шифром")
+        print("3. Расшифрование аффинным шифром")
+        print("4. Частотный анализ текста")
+        print("5. Криптоанализ аффинного шифра")
+        print("6. Выход")
         
-        choice = input("\nВаш выбор (1-8): ").strip()
+        choice = input("\nВаш выбор (1-6): ").strip()
         
         if choice == '1':
+            modular_arithmetic_menu()
+            
+        elif choice == '2':
             text = get_text_input()
             if not text:
                 continue
@@ -336,11 +483,11 @@ def main():
             
             save_choice = input("Сохранить результат в файл? (y/n): ").strip().lower()
             if save_choice == 'y':
-                filename = input("Введите имя файла для сохранения: ")
+                filename = input("Введите название файла (без расширения): ") + ".txt"
                 save_to_file(filename, encrypted_text)
                 print(f"Результат сохранен в файл '{filename}'")
 
-        elif choice == '2':
+        elif choice == '3':
             text = get_text_input()
             if not text:
                 continue
@@ -364,69 +511,17 @@ def main():
             
             save_choice = input("Сохранить результат в файл? (y/n): ").strip().lower()
             if save_choice == 'y':
-                filename = input("Введите имя файла для сохранения: ")
+                filename = input("Введите название файла (без расширения): ") + ".txt"
                 save_to_file(filename, decrypted_text)
                 print(f"Результат сохранен в файл '{filename}'")
 
-        elif choice == '3':
-            try:
-                a = int(input("Введите элемент a: "))
-                modulus = int(input("Введите модуль m: "))
-                
-                inverse = mod_inverse(a, modulus)
-                
-                if inverse is None:
-                    print(f"Обратный элемент для {a} mod {modulus} не существует")
-                else:
-                    print(f"Обратный элемент для {a} mod {modulus}: {inverse}")
-                    print(f"Проверка: {a} * {inverse} mod {modulus} = {(a * inverse) % modulus}")
-                    
-            except ValueError:
-                print("Введите корректные числа!")
-
         elif choice == '4':
-            try:
-                a = int(input("Введите a: "))
-                b = int(input("Введите b: "))
-                modulus = int(input("Введите модуль m: "))
-                
-                solutions = solve_linear_congruence(a, b, modulus)
-                
-                if not solutions:
-                    print(f"Сравнение {a}x ≡ {b} (mod {modulus}) не имеет решений")
-                else:
-                    print(f"Решения сравнения {a}x ≡ {b} (mod {modulus}): {solutions}")
-                    
-            except ValueError:
-                print("Введите корректные числа!")
-
-        elif choice == '5':
-            try:
-                a = int(input("Введите a (из первого уравнения): "))
-                b1 = int(input("Введите b (из первого уравнения): "))
-                c = int(input("Введите c (из второго уравнения): "))
-                d = int(input("Введите d (из второго уравнения): "))
-                modulus = int(input("Введите модуль m: "))
-                
-                solutions = solve_system_of_congruences(a, c, b1, d, modulus)
-                
-                if not solutions:
-                    print("Система не имеет решений")
-                else:
-                    print("Решения системы:")
-                    for i, (x, y) in enumerate(solutions, 1):
-                        print(f"Решение {i}: x = {x}, y = {y}")
-                        
-            except ValueError:
-                print("Введите корректные числа!")
-
-        elif choice == '6':
             frequency_analysis_menu()
 
-        elif choice == '7':
+        elif choice == '5':
             crypto_analysis_menu()
 
-        elif choice == '8':
+        elif choice == '6':
             print("Выход из программы.")
             break
 
