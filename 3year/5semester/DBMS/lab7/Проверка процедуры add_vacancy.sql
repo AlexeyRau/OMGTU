@@ -1,11 +1,10 @@
 CALL add_vacancy(
-    'Backend-разработчик',
-    'Разработка серверной части веб-приложений',
-    'Опыт работы с PostgreSQL, Node.js',
+    'Data Scientist',
+    'Анализ больших данных, построение ML-моделей',
+    'Python, SQL, машинное обучение',
     150000,
-    1,
-    5,
-    1
+    4,
+    5
 );
 
-SELECT * FROM vacancies ORDER BY vac_id;
+SELECT * FROM Vacancies WHERE vac_position = 'Data Scientist';

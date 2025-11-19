@@ -1,23 +1,33 @@
+DROP PROCEDURE IF EXISTS add_vacancy;
 CREATE OR REPLACE PROCEDURE add_vacancy(
-    vac_position_text text,
-    description text,
-    requirements text,
-    salary numeric,
-    employer_id integer,
-    category_id integer,
-    status_id integer
+    p_position TEXT,
+    p_description TEXT,
+    p_requirements TEXT,
+    p_salary INTEGER,
+    p_employer_id INTEGER,
+    p_category_id INTEGER
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    INSERT INTO vacancies (
-        vac_position, vac_description, vac_requirements, 
-        vac_salary, vac_emp_id, vac_cat_id, vac_status_id
+    INSERT INTO Vacancies (
+        vac_position, 
+        vac_description, 
+        vac_requirements, 
+        vac_salary, 
+        vac_emp_id, 
+        vac_cat_id, 
+        vac_status_id
     ) VALUES (
-        vac_position_text, description, requirements, 
-        salary, employer_id, category_id, status_id
+        p_position,
+        p_description,
+        p_requirements,
+        p_salary,
+        p_employer_id,
+        p_category_id,
+        1
     );
 END;
 $$;
 
-SELECT * FROM vacancies ORDER BY vac_id;
+SELECT * FROM Vacancies WHERE vac_position = 'Data Scientist';

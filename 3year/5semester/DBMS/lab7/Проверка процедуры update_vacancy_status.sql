@@ -1,2 +1,2 @@
 CALL update_vacancy_status(1, 2);
-SELECT * FROM vacancies ORDER BY vac_id;
+SELECT * FROM Vacancies WHERE vac_id = 1;

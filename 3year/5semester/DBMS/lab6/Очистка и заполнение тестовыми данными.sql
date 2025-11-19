@@ -1,4 +1,3 @@
--- Очистка и перезаполнение данных
 TRUNCATE TABLE Interviews, Responses, Vacancies, Resumes, Employers, Staff, Categories, VacancyStatuses, ResponseStatuses RESTART IDENTITY CASCADE;
 
 INSERT INTO VacancyStatuses (status_id, status_name) VALUES 
@@ -50,13 +49,12 @@ INSERT INTO Vacancies (vac_position, vac_description, vac_requirements, vac_sala
 ('Менеджер по работе с клиентами', 'Обслуживание существующих клиентов', 'Коммуникабельность, стрессоустойчивость', 75000, 5, 2, 3),
 ('Junior QA Engineer', 'Тестирование веб-приложений', 'Базовые знания тестирования', 60000, 1, 5, 1);
 
-INSERT INTO Responses (resp_id, resp_vacancy_id, resp_resume_id, resp_date, resp_status_id, resp_staff_id) VALUES
-(1, 1, 1, CURRENT_DATE - INTERVAL '5 days', 1, 1),
-(2, 2, 2, CURRENT_DATE - INTERVAL '4 days', 1, 2),
-(3, 3, 3, CURRENT_DATE - INTERVAL '3 days', 2, 1),
-(4, 4, 4, CURRENT_DATE - INTERVAL '2 days', 3, 2),
-(5, 4, 5, CURRENT_DATE - INTERVAL '1 day', 1, 1);
+INSERT INTO Responses (resp_vacancy_id, resp_resume_id, resp_date, resp_status_id, resp_staff_id) VALUES
+(1, 1, CURRENT_DATE - INTERVAL '5 days', 1, 1),
+(2, 2, CURRENT_DATE - INTERVAL '4 days', 1, 2),
+(3, 3, CURRENT_DATE - INTERVAL '3 days', 2, 1),
+(4, 4, CURRENT_DATE - INTERVAL '2 days', 3, 2),
+(4, 5, CURRENT_DATE - INTERVAL '1 day', 1, 1);
 
--- ИСПРАВЛЕННАЯ ЧАСТЬ: даты собеседований в БУДУЩЕМ
 INSERT INTO Interviews (int_id, int_response_id, int_date_time, int_location, int_result) VALUES
 (1, 3, CURRENT_DATE + INTERVAL '5 days', 'Омск, ул. Маркса, 10, офис 305', 'запланировано');
