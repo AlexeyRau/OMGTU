@@ -19,5 +19,5 @@ BEGIN
 END;
 $$;
 
-SELECT * FROM Resumes WHERE res_cat_id = 7;  -- Соискатели в веб-разработке
+SELECT * FROM Resumes WHERE res_cat_id = 7;
 SELECT * FROM get_candidate_stats_by_category(7);
