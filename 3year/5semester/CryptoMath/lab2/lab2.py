@@ -1,21 +1,3 @@
-""" меню программы:
-1) Проверка модульной арифметики
-    1) нахождение нод пары чисел и коэффициентов безу (если один из коэффициентов отрицательный то вместо него берем наименьший отрицательный вычет) (нельзя использовать библиотеки, пишем алгоритм Евклида сами) 
-    2) поиск элемента обратного данному (может не существовать) 
-    3) Решение сравнения вида ax == b (mod m)  
-    4) Решение системы сравнений с модулями из двух строчек (решение: из первого вычесть второе и потом добить)
-2) Взлом варианта: 
-    a) Только посмотреть частотный анализ ( 
-        1) с консоли взять шифровку 
-        2) указать имя файла с шифровкой (в рузультате выдаем статистику по частоте букв в зашифрованном тексте) 
-    б) перебор гипотез (использовать старый частотный анализ если вызывался + расшифровать (подобрать ключ)))
-пользователю отображать свои гипотезы и ключ и вариант расшифровки
-вести протокол расшифровки и на консоль и в файл
-!!! Может получиться система не разрешимая 
-Пишем что гипотеза не состоятельна
-А еще в системе может получиться несколько пар возможных ключей
-Использовать их все и выводить результат """
-
 import tkinter as tk
 from tkinter import filedialog
 import matplotlib
@@ -177,44 +159,88 @@ def decryption(text, a, b):
         result.append(num_to_symbol(y))
     return ''.join(result)
 
-def hypothesis_check(first_char, second_char, text):
+def hypothesis_check(first_char, second_char, text, log_file):
     first_num = symbol_to_num(first_char)
     second_num = symbol_to_num(second_char)
     first_alphabet_num = symbol_to_num(frequent_letters[0])
     second_alphabet_num = symbol_to_num(frequent_letters[1])
 
+    log_file.write(f"\nПроверяем гипотезу: '{first_char}' -> '{frequent_letters[0]}', '{second_char}' -> '{frequent_letters[1]}'\n")
+    log_file.write(f"a1 = {first_alphabet_num}, a2 = {second_alphabet_num}, b1 = {first_num}, b2 = {second_num}\n")
+    
     results = solve_system_of_congruences(first_alphabet_num, second_alphabet_num, first_num, second_num, russian_alphabet_lenght)
                 
     if not results:
+        log_file.write(f"Система не разрешима\n")
         print(f"a1 = {first_alphabet_num}, a2 = {second_alphabet_num}, b1 = {first_num}, b2 = {second_num} не подходит")
         return None, None, None
     else:
+        log_file.write(f"Найдено {len(results)} решений системы\n")
         for i, (a, b) in enumerate(results, 1):
             final_text = decryption(text, a, b)
             if final_text == None:
+                log_file.write(f"Решение {i}: a = {a}, b = {b} - не подходит (обратный элемент не существует)\n")
                 print(f"a1 = {first_alphabet_num}, a2 = {second_alphabet_num}, b1 = {first_num}, b2 = {second_num} не подходит")
                 return None, None, None
             else:
+                log_file.write(f"Решение {i}: a = {a}, b = {b}\n")
+                log_file.write(f"Расшифрованный текст: {final_text[:100]}...\n")
                 print(f"Ключ: a = {a}, b = {b}")
-                print(f"Получен текст: {final_text}")
+                print(f"Получен текст: {final_text[:100]}...")
                 return a, b, final_text
         return None, None, None
 
 def crack_affine_cipher(text):
-    sorted_freq = frequency_analysis(text)
-    for first_char in sorted_freq:
-        for second_char in sorted_freq:
-            if first_char != second_char:
-                a, b, final_text = hypothesis_check(first_char, second_char, text)
-                if final_text != None:
-                    choise = input("Остановить перебор? (y/n): ")
-                    if choise == 'y':
-                        return a, b, final_text
-                a, b, final_text = hypothesis_check(second_char, first_char, text)
-                if final_text != None:
-                    choise = input("Остановить перебор? (y/n): ")
-                    if choise == 'y':
-                        return a, b, final_text                
+    log_filename = "decryption_protocol.txt"
+    with open(log_filename, 'w', encoding='utf-8') as log_file:
+        log_file.write("="*60 + "\n")
+        log_file.write("ПРОТОКОЛ РАСШИФРОВКИ АФФИННОГО ШИФРА\n")
+        log_file.write("="*60 + "\n\n")
+        log_file.write(f"Исходный зашифрованный текст: {text[:100]}...\n")
+        log_file.write(f"Длина текста: {len(text)} символов\n\n")
+        
+        sorted_freq = frequency_analysis(text)
+        log_file.write("Частотный анализ зашифрованного текста:\n")
+        for char, freq in sorted_freq.items():
+            log_file.write(f"  '{char}': {freq:.5f}\n")
+        log_file.write("\n")
+        
+        log_file.write("Начинаем перебор гипотез...\n")
+        log_file.write("-"*60 + "\n")
+        
+        print(f"Начинаем перебор гипотез... (протокол записывается в {log_filename})")
+        
+        # Берём топ-5 самых частых букв в шифротексте
+        top_encrypted = list(sorted_freq.keys())[:5]
+        
+        # Берём топ-5 самых частых букв в русском языке
+        top_plain = frequent_letters[:5]
+        
+        for i in range(len(top_plain)):
+            for j in range(i+1, len(top_plain)):
+                plain1, plain2 = top_plain[i], top_plain[j]
+                
+                for enc1 in top_encrypted:
+                    for enc2 in top_encrypted:
+                        if enc1 == enc2:
+                            continue
+                        
+                        log_file.write(f"\nГипотеза: '{enc1}' -> '{plain1}', '{enc2}' -> '{plain2}'\n")
+                        
+                        a, b, final_text = hypothesis_check(enc1, enc2, plain1, plain2, text, log_file)
+                        if final_text:
+                            log_file.write(f"\n" + "="*60 + "\n")
+                            log_file.write(f"НАЙДЕН ПОДХОДЯЩИЙ КЛЮЧ!\n")
+                            log_file.write(f"Ключ: a = {a}, b = {b}\n")
+                            log_file.write(f"Расшифрованный текст: {final_text}\n")
+                            log_file.write("="*60 + "\n")
+                            
+                            choice = input("Остановить перебор? (y/n): ")
+                            log_file.write(f"Пользователь выбрал: {choice}\n")
+                            if choice.lower() == 'y':
+                                print(f"Протокол сохранен в файл: {log_filename}")
+                                return a, b, final_text
+    return None, None, None
 
 def modular_arithmetic_menu():
     """Меню для проверки модульной арифметики"""
