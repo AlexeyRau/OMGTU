@@ -160,35 +160,44 @@ def decryption(text, a, b):
     return ''.join(result)
 
 def hypothesis_check(first_char, second_char, text, log_file):
+    """Проверяет гипотезу и возвращает ВСЕ возможные ключи"""
     first_num = symbol_to_num(first_char)
     second_num = symbol_to_num(second_char)
     first_alphabet_num = symbol_to_num(frequent_letters[0])
-    second_alphabet_num = symbol_to_num(frequent_letters[1])
-
-    log_file.write(f"\nПроверяем гипотезу: '{first_char}' -> '{frequent_letters[0]}', '{second_char}' -> '{frequent_letters[1]}'\n")
-    log_file.write(f"a1 = {first_alphabet_num}, a2 = {second_alphabet_num}, b1 = {first_num}, b2 = {second_num}\n")
+    second_alphabet_num = symbol_to_num(frequent_letters[0])
     
-    results = solve_system_of_congruences(first_alphabet_num, second_alphabet_num, first_num, second_num, russian_alphabet_lenght)
-                
-    if not results:
+    log_file.write(f"\nПроверяем гипотезу: '{first_char}' -> 'о', '{second_char}' -> 'е'\n")
+    log_file.write(f"Уравнения:\n")
+    log_file.write(f"  {first_alphabet_num}*a + b ≡ {first_num} (mod {russian_alphabet_lenght})\n")
+    log_file.write(f"  {second_alphabet_num}*a + b ≡ {second_num} (mod {russian_alphabet_lenght})\n")
+    
+    solutions = solve_system_of_congruences(
+        first_alphabet_num, second_alphabet_num, 
+        first_num, second_num, 
+        russian_alphabet_lenght
+    )
+    
+    if not solutions:
         log_file.write(f"Система не разрешима\n")
-        print(f"a1 = {first_alphabet_num}, a2 = {second_alphabet_num}, b1 = {first_num}, b2 = {second_num} не подходит")
-        return None, None, None
-    else:
-        log_file.write(f"Найдено {len(results)} решений системы\n")
-        for i, (a, b) in enumerate(results, 1):
-            final_text = decryption(text, a, b)
-            if final_text == None:
-                log_file.write(f"Решение {i}: a = {a}, b = {b} - не подходит (обратный элемент не существует)\n")
-                print(f"a1 = {first_alphabet_num}, a2 = {second_alphabet_num}, b1 = {first_num}, b2 = {second_num} не подходит")
-                return None, None, None
-            else:
-                log_file.write(f"Решение {i}: a = {a}, b = {b}\n")
-                log_file.write(f"Расшифрованный текст: {final_text[:100]}...\n")
-                print(f"Ключ: a = {a}, b = {b}")
-                print(f"Получен текст: {final_text[:100]}...")
-                return a, b, final_text
-        return None, None, None
+        print(f"  Гипотеза '{first_char}->о, {second_char}->е' не дала решений")
+        return []
+    
+    log_file.write(f"Найдено {len(solutions)} решений системы:\n")
+    
+    valid_solutions = []
+    for i, (a, b) in enumerate(solutions, 1):
+        a_inverse = mod_inverse(a, russian_alphabet_lenght)
+        if a_inverse is None:
+            log_file.write(f"  Решение {i}: a = {a}, b = {b} - не подходит (a не взаимно прост с {russian_alphabet_lenght})\n")
+            continue
+            
+        final_text = decryption(text, a, b)
+        log_file.write(f"  Решение {i}: a = {a}, b = {b}\n")
+        log_file.write(f"    Расшифровка (первые 100 символов): {final_text[:100]}...\n")
+        
+        valid_solutions.append((a, b, final_text))
+    
+    return valid_solutions
 
 def crack_affine_cipher(text):
     log_filename = "decryption_protocol.txt"
@@ -205,52 +214,69 @@ def crack_affine_cipher(text):
             log_file.write(f"  '{char}': {freq:.5f}\n")
         log_file.write("\n")
         
-        log_file.write("Начинаем перебор гипотез...\n")
+        frequent_chars = list(sorted_freq.keys())
+        
+        log_file.write(f"Начинаем перебор гипотез для {len(frequent_chars)} наиболее частых символов...\n")
         log_file.write("-"*60 + "\n")
         
         print(f"Начинаем перебор гипотез... (протокол записывается в {log_filename})")
         
-        for first_char in sorted_freq:
-            for second_char in sorted_freq:
-                if first_char != second_char:
-                    log_file.write(f"\nГипотеза: '{first_char}' (частота: {sorted_freq[first_char]:.5f}) -> 'о'")
-                    log_file.write(f", '{second_char}' (частота: {sorted_freq[second_char]:.5f}) -> 'е'\n")
+        for i in range(len(frequent_chars)):
+            for j in range(i+1, len(frequent_chars)):
+                first_char = frequent_chars[i]
+                second_char = frequent_chars[j]
+                
+                log_file.write(f"\n{'='*40}\n")
+                log_file.write(f"Гипотеза {i*len(frequent_chars)+j+1}: '{first_char}' -> 'о', '{second_char}' -> 'е'\n")
+                
+                results = []
+                
+                solutions1 = hypothesis_check(first_char, second_char, text, log_file)
+                results.extend(solutions1)
+                
+                log_file.write(f"\nПроверяем обратный порядок: '{second_char}' -> 'о', '{first_char}' -> 'е'\n")
+                solutions2 = hypothesis_check(second_char, first_char, text, log_file)
+                results.extend(solutions2)
+                
+                if results:
+                    log_file.write(f"\n{'='*60}\n")
+                    log_file.write(f"НАЙДЕНО {len(results)} ВАРИАНТОВ КЛЮЧЕЙ!\n")
                     
-                    a, b, final_text = hypothesis_check(first_char, second_char, text, log_file)
-                    if final_text != None:
-                        log_file.write(f"\n" + "="*60 + "\n")
-                        log_file.write(f"НАЙДЕН ПОДХОДЯЩИЙ КЛЮЧ!\n")
-                        log_file.write(f"Ключ: a = {a}, b = {b}\n")
-                        log_file.write(f"Расшифрованный текст: {final_text}\n")
-                        log_file.write("="*60 + "\n")
+                    print(f"\nНайдено {len(results)} вариантов ключей для гипотезы {first_char}/{second_char}:")
+                    
+                    for idx, (a, b, decrypted) in enumerate(results, 1):
+                        log_file.write(f"\nВариант {idx}:\n")
+                        log_file.write(f"  Ключ: a = {a}, b = {b}\n")
+                        log_file.write(f"  Расшифрованный текст: {decrypted[:150]}...\n")
                         
-                        choise = input("Остановить перебор? (y/n): ")
-                        log_file.write(f"Пользователь выбрал: {choise}\n")
-                        if choise.lower() == 'y':
-                            print(f"Протокол сохранен в файл: {log_filename}")
-                            return a, b, final_text
-                    
-                    log_file.write(f"\nГипотеза: '{second_char}' (частота: {sorted_freq[second_char]:.5f}) -> 'о'")
-                    log_file.write(f", '{first_char}' (частота: {sorted_freq[first_char]:.5f}) -> 'е'\n")
-                    
-                    a, b, final_text = hypothesis_check(second_char, first_char, text, log_file)
-                    if final_text != None:
-                        log_file.write(f"\n" + "="*60 + "\n")
-                        log_file.write(f"НАЙДЕН ПОДХОДЯЩИЙ КЛЮЧ!\n")
-                        log_file.write(f"Ключ: a = {a}, b = {b}\n")
-                        log_file.write(f"Расшифрованный текст: {final_text}\n")
-                        log_file.write("="*60 + "\n")
+                        print(f"\nВариант {idx}: a={a}, b={b}")
+                        print(f"Текст: {decrypted[:100]}...")
                         
-                        choise = input("Остановить перебор? (y/n): ")
-                        log_file.write(f"Пользователь выбрал: {choise}\n")
-                        if choise.lower() == 'y':
-                            print(f"Протокол сохранен в файл: {log_filename}")
-                            return a, b, final_text
+                        choice = input(f"\nЭто осмысленный текст? (y - да, n - нет, s - сохранить и продолжить): ").lower()
+                        log_file.write(f"  Реакция пользователя: {choice}\n")
+                        
+                        if choice == 'y':
+                            log_file.write(f"\n{'='*60}\n")
+                            log_file.write(f"ПОЛЬЗОВАТЕЛЬ ПОДТВЕРДИЛ ОСМЫСЛЕННОСТЬ ТЕКСТА!\n")
+                            log_file.write(f"ФИНАЛЬНЫЙ КЛЮЧ: a = {a}, b = {b}\n")
+                            log_file.write(f"ПОЛНЫЙ ТЕКСТ:\n{decrypted}\n")
+                            log_file.write("="*60 + "\n")
+                            
+                            print(f"\nПротокол сохранен в {log_filename}")
+                            return a, b, decrypted
+                        
+                        elif choice == 's':
+                            save_filename = f"decrypted_variant_{idx}.txt"
+                            with open(save_filename, 'w', encoding='utf-8') as f:
+                                f.write(f"Ключ: a={a}, b={b}\n\n")
+                                f.write(decrypted)
+                            print(f"Сохранено в {save_filename}")
+                            log_file.write(f"  Текст сохранен в файл: {save_filename}\n")
         
         log_file.write("\n" + "="*60 + "\n")
         log_file.write("ПЕРЕБОР ЗАВЕРШЕН. ПОДХОДЯЩИЙ КЛЮЧ НЕ НАЙДЕН.\n")
         log_file.write("="*60 + "\n")
-        print(f"Перебор завершен. Подходящий ключ не найден.")
+        print(f"\nПеребор завершен. Подходящий ключ не найден.")
         print(f"Протокол сохранен в файл: {log_filename}")
     
     return None, None, None
@@ -372,7 +398,7 @@ def cypher_menu():
         print("3. Назад в главное меню")
         print("="*50)
 
-        choice = input("\nВаш выбор (1-5): ").strip()
+        choice = input("\nВаш выбор (1-3): ").strip()
 
         if choice == '1':
             text = get_text_input()
