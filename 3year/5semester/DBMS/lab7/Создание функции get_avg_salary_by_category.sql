@@ -14,5 +14,5 @@ BEGIN
 END;
 $$;
 
-SELECT * FROM Vacancies WHERE vac_cat_id = 5 AND vac_status_id = 1;
+--SELECT * FROM Vacancies WHERE vac_cat_id = 5 AND vac_status_id = 1;
 SELECT get_avg_salary_by_category(5) AS avg_salary_programming;

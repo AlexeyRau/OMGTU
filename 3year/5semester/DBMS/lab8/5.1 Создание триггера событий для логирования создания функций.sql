@@ -6,8 +6,7 @@ BEGIN
     FOR r IN SELECT * FROM pg_event_trigger_ddl_commands() 
     LOOP
         IF r.command_tag IN ('CREATE FUNCTION', 'DROP FUNCTION', 'CREATE PROCEDURE', 'DROP PROCEDURE') THEN
-            RAISE NOTICE 'Операция с функцией/процедурой: % - Объект: %', 
-                         r.command_tag, r.object_identity;
+            RAISE NOTICE 'Операция с функцией/процедурой: % - Объект: %', r.command_tag, r.object_identity;
         END IF;
     END LOOP;
 END;
