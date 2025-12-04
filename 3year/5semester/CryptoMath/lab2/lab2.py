@@ -210,36 +210,49 @@ def crack_affine_cipher(text):
         
         print(f"Начинаем перебор гипотез... (протокол записывается в {log_filename})")
         
-        # Берём топ-5 самых частых букв в шифротексте
-        top_encrypted = list(sorted_freq.keys())[:5]
-        
-        # Берём топ-5 самых частых букв в русском языке
-        top_plain = frequent_letters[:5]
-        
-        for i in range(len(top_plain)):
-            for j in range(i+1, len(top_plain)):
-                plain1, plain2 = top_plain[i], top_plain[j]
-                
-                for enc1 in top_encrypted:
-                    for enc2 in top_encrypted:
-                        if enc1 == enc2:
-                            continue
+        for first_char in sorted_freq:
+            for second_char in sorted_freq:
+                if first_char != second_char:
+                    log_file.write(f"\nГипотеза: '{first_char}' (частота: {sorted_freq[first_char]:.5f}) -> 'о'")
+                    log_file.write(f", '{second_char}' (частота: {sorted_freq[second_char]:.5f}) -> 'е'\n")
+                    
+                    a, b, final_text = hypothesis_check(first_char, second_char, text, log_file)
+                    if final_text != None:
+                        log_file.write(f"\n" + "="*60 + "\n")
+                        log_file.write(f"НАЙДЕН ПОДХОДЯЩИЙ КЛЮЧ!\n")
+                        log_file.write(f"Ключ: a = {a}, b = {b}\n")
+                        log_file.write(f"Расшифрованный текст: {final_text}\n")
+                        log_file.write("="*60 + "\n")
                         
-                        log_file.write(f"\nГипотеза: '{enc1}' -> '{plain1}', '{enc2}' -> '{plain2}'\n")
+                        choise = input("Остановить перебор? (y/n): ")
+                        log_file.write(f"Пользователь выбрал: {choise}\n")
+                        if choise.lower() == 'y':
+                            print(f"Протокол сохранен в файл: {log_filename}")
+                            return a, b, final_text
+                    
+                    log_file.write(f"\nГипотеза: '{second_char}' (частота: {sorted_freq[second_char]:.5f}) -> 'о'")
+                    log_file.write(f", '{first_char}' (частота: {sorted_freq[first_char]:.5f}) -> 'е'\n")
+                    
+                    a, b, final_text = hypothesis_check(second_char, first_char, text, log_file)
+                    if final_text != None:
+                        log_file.write(f"\n" + "="*60 + "\n")
+                        log_file.write(f"НАЙДЕН ПОДХОДЯЩИЙ КЛЮЧ!\n")
+                        log_file.write(f"Ключ: a = {a}, b = {b}\n")
+                        log_file.write(f"Расшифрованный текст: {final_text}\n")
+                        log_file.write("="*60 + "\n")
                         
-                        a, b, final_text = hypothesis_check(enc1, enc2, plain1, plain2, text, log_file)
-                        if final_text:
-                            log_file.write(f"\n" + "="*60 + "\n")
-                            log_file.write(f"НАЙДЕН ПОДХОДЯЩИЙ КЛЮЧ!\n")
-                            log_file.write(f"Ключ: a = {a}, b = {b}\n")
-                            log_file.write(f"Расшифрованный текст: {final_text}\n")
-                            log_file.write("="*60 + "\n")
-                            
-                            choice = input("Остановить перебор? (y/n): ")
-                            log_file.write(f"Пользователь выбрал: {choice}\n")
-                            if choice.lower() == 'y':
-                                print(f"Протокол сохранен в файл: {log_filename}")
-                                return a, b, final_text
+                        choise = input("Остановить перебор? (y/n): ")
+                        log_file.write(f"Пользователь выбрал: {choise}\n")
+                        if choise.lower() == 'y':
+                            print(f"Протокол сохранен в файл: {log_filename}")
+                            return a, b, final_text
+        
+        log_file.write("\n" + "="*60 + "\n")
+        log_file.write("ПЕРЕБОР ЗАВЕРШЕН. ПОДХОДЯЩИЙ КЛЮЧ НЕ НАЙДЕН.\n")
+        log_file.write("="*60 + "\n")
+        print(f"Перебор завершен. Подходящий ключ не найден.")
+        print(f"Протокол сохранен в файл: {log_filename}")
+    
     return None, None, None
 
 def modular_arithmetic_menu():
