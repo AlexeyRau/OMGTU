@@ -1,9 +1,13 @@
+<script setup>
+import { RouterLink, RouterView } from 'vue-router'
+</script>
+
 <template>
   <div id="app">
     <header>
       <div class="container">
-        <h1>{{ headerTitle }}</h1>
-        <p>{{ headerSubtitle }}</p>
+        <h1>Лауреаты Нобелевских премий</h1>
+        <p>Информация о лауреатах и их достижениях</p>
       </div>
     </header>
 
@@ -11,123 +15,106 @@
       <div class="container">
         <ul>
           <li>
-            <router-link 
-              to="/prizes" 
-              :class="{ active: $route.path === '/prizes' }"
-            >
-              Премии
-            </router-link>
+            <RouterLink to="/" active-class="active">Премии</RouterLink>
           </li>
           <li>
-            <router-link 
-              to="/laureates" 
-              :class="{ active: $route.path === '/laureates' }"
-            >
-              Лауреаты
-            </router-link>
+            <RouterLink to="/laureates" active-class="active">Лауреаты</RouterLink>
           </li>
         </ul>
       </div>
     </nav>
 
     <main class="container">
-      <router-view></router-view>
+      <RouterView />
     </main>
 
     <footer>
       <div class="container">
-        <p>2025 Нобелевские премии. Лабораторная работа №2 - Реактивность</p>
+        <p>2025 Нобелевские премии. Лабораторная работа №2</p>
       </div>
     </footer>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'App',
-  computed: {
-    headerTitle() {
-      return this.$route.path === '/prizes' 
-        ? 'Нобелевские премии' 
-        : 'Лауреаты Нобелевских премий'
-    },
-    headerSubtitle() {
-      return this.$route.path === '/prizes'
-        ? 'Информация о категориях и наградах'
-        : 'Информация о лауреатах и их достижениях'
-    }
-  }
-}
-</script>
-
 <style>
 * {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: Arial;
-    line-height: 1.6;
-    color: black;
-    background-color: white;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: black;
+  background-color: white;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .container {
-    width: 90%;
-    margin: 0 auto;
-    padding: 20px;
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 header {
-    background-color: #2c3e50;
-    color: white;
-    padding: 16px 0;
-    text-align: center;
+  background-color: #2c3e50;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
 }
 
 header h1 {
-    margin-bottom: 8px;
+  margin-bottom: 10px;
+  font-size: 2rem;
 }
 
 nav {
-    background-color: #34495e;
-    padding: 16px 0;
+  background-color: #34495e;
+  padding: 15px 0;
 }
 
 nav ul {
-    list-style: none;
-    display: flex;
-    justify-content: center;
-    gap: 32px;
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 0;
+  padding: 0;
 }
 
 nav a {
-    color: white;
-    text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 4px;
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
 }
 
 nav a:hover {
-    background-color: #1abc9c;
+  background-color: #1abc9c;
 }
 
-nav a.router-link-active,
 nav a.active {
-    background-color: #16a085;
+  background-color: #16a085;
 }
 
 main {
-    padding: 32px 0;
-    min-height: 60vh;
+  flex: 1;
+  padding: 40px 0;
 }
 
 footer {
-    background-color: #2c3e50;
-    color: white;
-    text-align: center;
-    padding: 1rem 0;
-    margin-top: 2rem;
+  background-color: #2c3e50;
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+  margin-top: auto;
 }
 </style>

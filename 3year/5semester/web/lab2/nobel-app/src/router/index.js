@@ -1,23 +1,20 @@
-import Prizes from '@/views/Prizes.vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import PrizesView from '../views/PrizesView.vue'
+import LaureatesView from '../views/LaureatesView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/', 
-      redirect: '/prizes'
+      path: '/',
+      name: 'prizes',
+      component: PrizesView
     },
     {
-      path: '/prizes', 
-      name: 'prizes', 
-      component: () => import('@/views/Prizes.vue')
+      path: '/laureates',
+      name: 'laureates',
+      component: LaureatesView
     },
-    {
-      path: '/laureates', 
-      name: 'laureats', 
-      component: () => import('@/views/Laureates.vue')
-    }
   ]
 })
 
