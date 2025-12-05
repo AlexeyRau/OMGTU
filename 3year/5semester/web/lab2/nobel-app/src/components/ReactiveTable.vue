@@ -65,7 +65,8 @@ table {
   min-width: 600px;
 }
 
-th, td {
+th,
+td {
   padding: 15px 20px;
   text-align: left;
   border: 1px solid #ddd;
@@ -99,11 +100,13 @@ td {
 
 /* Адаптивность */
 @media (max-width: 768px) {
-  th, td {
+
+  th,
+  td {
     padding: 12px 15px;
     font-size: 14px;
   }
-  
+
   .container {
     width: 95%;
     padding: 0 10px;

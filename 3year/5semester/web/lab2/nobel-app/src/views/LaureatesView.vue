@@ -17,9 +17,5 @@ const laureatesData = [
 </script>
 
 <template>
-  <ReactiveTable 
-    :columns="columns" 
-    :data="laureatesData" 
-    title="Лауреаты Нобелевских премий"
-  />
+  <ReactiveTable :columns="columns" :data="laureatesData" title="Лауреаты Нобелевских премий" />
 </template>
