@@ -160,11 +160,10 @@ def decryption(text, a, b):
     return ''.join(result)
 
 def hypothesis_check(first_char, second_char, text, log_file):
-    """Проверяет гипотезу и возвращает ВСЕ возможные ключи"""
     first_num = symbol_to_num(first_char)
     second_num = symbol_to_num(second_char)
     first_alphabet_num = symbol_to_num(frequent_letters[0])
-    second_alphabet_num = symbol_to_num(frequent_letters[0])
+    second_alphabet_num = symbol_to_num(frequent_letters[1])
     
     log_file.write(f"\nПроверяем гипотезу: '{first_char}' -> 'о', '{second_char}' -> 'е'\n")
     log_file.write(f"Уравнения:\n")
