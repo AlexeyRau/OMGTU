@@ -30,7 +30,7 @@ import { RouterLink, RouterView } from 'vue-router'
 
     <footer>
       <div class="container">
-        <p>2025 Нобелевские премии. Лабораторная работа №2</p>
+        <p>2025 Нобелевские премии. Лабораторная работа №3</p>
       </div>
     </footer>
   </div>
