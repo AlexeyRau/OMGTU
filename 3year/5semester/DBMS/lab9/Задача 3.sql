@@ -10,7 +10,6 @@ CREATE TABLE responses_archive (
     archived_date DATE DEFAULT CURRENT_DATE
 );
 
--- Добавляем тестовые старые отклики для демонстрации работы процедуры
 INSERT INTO Responses (resp_vacancy_id, resp_resume_id, resp_date, resp_status_id, resp_staff_id) VALUES
 (1, 1, CURRENT_DATE - INTERVAL '45 days', 1, 1),
 (2, 2, CURRENT_DATE - INTERVAL '60 days', 2, 2),
@@ -35,14 +34,12 @@ BEGIN
         FETCH cur INTO resp_record;
         EXIT WHEN NOT FOUND;
         
-        -- Копируем запись в архив
         INSERT INTO responses_archive 
             (resp_vacancy_id, resp_resume_id, resp_date, resp_status_id, resp_staff_id)
         VALUES 
             (resp_record.resp_vacancy_id, resp_record.resp_resume_id, 
              resp_record.resp_date, resp_record.resp_status_id, resp_record.resp_staff_id);
         
-        -- Удаляем из основной таблицы
         DELETE FROM Responses WHERE resp_id = resp_record.resp_id;
         
         archived_count := archived_count + 1;
