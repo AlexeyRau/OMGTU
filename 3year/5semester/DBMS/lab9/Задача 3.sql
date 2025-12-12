@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS responses_archive;
 
-CREATE TABLE IF NOT EXISTS responses_archive (
+CREATE TABLE responses_archive (
     arch_id SERIAL PRIMARY KEY,
     resp_vacancy_id INTEGER,
     resp_resume_id INTEGER,
@@ -9,6 +9,12 @@ CREATE TABLE IF NOT EXISTS responses_archive (
     resp_staff_id INTEGER,
     archived_date DATE DEFAULT CURRENT_DATE
 );
+
+-- Добавляем тестовые старые отклики для демонстрации работы процедуры
+INSERT INTO Responses (resp_vacancy_id, resp_resume_id, resp_date, resp_status_id, resp_staff_id) VALUES
+(1, 1, CURRENT_DATE - INTERVAL '45 days', 1, 1),
+(2, 2, CURRENT_DATE - INTERVAL '60 days', 2, 2),
+(3, 3, CURRENT_DATE - INTERVAL '90 days', 3, 3);
 
 DROP PROCEDURE IF EXISTS archive_old_responses();
 
@@ -24,12 +30,6 @@ DECLARE
     resp_record Responses%ROWTYPE;
     archived_count INTEGER := 0;
 BEGIN
-    -- Сначала добавляем некоторые старые отклики для тестирования
-    INSERT INTO Responses (resp_vacancy_id, resp_resume_id, resp_date, resp_status_id, resp_staff_id)
-    VALUES 
-        (1, 1, CURRENT_DATE - INTERVAL '45 days', 1, 1),
-        (2, 2, CURRENT_DATE - INTERVAL '60 days', 2, 2);
-    
     OPEN cur;
     LOOP
         FETCH cur INTO resp_record;
@@ -52,3 +52,7 @@ BEGIN
     RAISE NOTICE 'Заархивировано % откликов', archived_count;
 END;
 $$;
+
+--CALL archive_old_responses();
+
+--SELECT * FROM responses_archive ORDER BY archived_date;
