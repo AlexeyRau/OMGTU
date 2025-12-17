@@ -50,6 +50,6 @@ BEGIN
 END;
 $$;
 
---CALL archive_old_responses();
+CALL archive_old_responses();
 
---SELECT * FROM responses_archive ORDER BY archived_date;
+SELECT * FROM responses_archive ORDER BY archived_date;

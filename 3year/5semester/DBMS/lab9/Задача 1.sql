@@ -7,7 +7,7 @@ DECLARE
     cur CURSOR FOR 
         SELECT 
             v.vac_position,
-            v.vac_salary,
+            to_char(v.vac_salary, '9999999990.00') as formatted_salary,
             e.emp_company_name,
             c.cat_name
         FROM Vacancies v
@@ -25,7 +25,7 @@ BEGIN
         
         RAISE NOTICE 'Вакансия: %, Зарплата: %, Работодатель: %, Категория: %',
             rec.vac_position,
-            rec.vac_salary,
+            rec.formatted_salary,
             rec.emp_company_name,
             rec.cat_name;
     END LOOP;
