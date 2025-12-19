@@ -1,24 +1,7 @@
-SELECT 
-    m.serial_number AS "Счётчик",
-    s.service_name AS "Услуга",
-    mr.reading_date AS "Дата",
-    mr.consumption AS "Текущий расход",
-    LAG(mr.consumption) OVER (
-        PARTITION BY mr.meter_id 
-        ORDER BY mr.reading_date
-    ) AS "Предыдущий расход",
-    ROUND(
-        (mr.consumption - LAG(mr.consumption) OVER (
-            PARTITION BY mr.meter_id 
-            ORDER BY mr.reading_date
-        )) * 100.0 / NULLIF(LAG(mr.consumption) OVER (
-            PARTITION BY mr.meter_id 
-            ORDER BY mr.reading_date
-        ), 0), 2
-    ) AS "Изменение, %"
-FROM meter_readings mr
-JOIN meters m ON mr.meter_id = m.meter_id
-JOIN contracts c ON m.contract_id = c.contract_id
-JOIN services s ON c.service_id = s.service_id
-WHERE mr.reading_date >= '2024-01-01'
-ORDER BY m.serial_number, mr.reading_date;
+SELECT
+    DATE_TRUNC('month', payment_date) as month,
+    SUM(amount) as monthly_total,
+    to_char((AVG(SUM(amount)) OVER (ORDER BY DATE_TRUNC('month', payment_date) ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)), '9999999990.00') as moving_avg_3m
+FROM payments
+GROUP BY DATE_TRUNC('month', payment_date)
+ORDER BY month;

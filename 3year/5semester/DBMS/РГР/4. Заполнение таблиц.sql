@@ -63,7 +63,6 @@ INSERT INTO meters (serial_number, model, installation_date, location, contract_
 ('WT007-2023', 'SAW-220', '2024-01-15', 'Подвал', 14),
 ('GZ004-2023', 'Гранд-6', '2024-02-20', 'Котельная', 16);
 
--- Для каждого счётчика по 3-4 периода показаний
 INSERT INTO meter_readings (meter_id, reading_date, current_value, previous_value) VALUES
 -- Счётчик 1 (4 периода)
 (1, '2023-12-01', 120.000, 115.000),

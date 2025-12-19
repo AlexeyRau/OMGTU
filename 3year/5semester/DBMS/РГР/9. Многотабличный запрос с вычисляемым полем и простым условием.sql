@@ -1,15 +1,9 @@
 SELECT 
-    cl.full_name AS "Клиент",
-    s.service_name AS "Услуга",
-    co.contract_number AS "Номер договора",
-    ac.period AS "Период",
-    ac.consumption AS "Расход, ед.",
-    ac.amount AS "Сумма, руб.",
-    ROUND(ac.amount / NULLIF(ac.consumption, 0), 2) AS "Тариф, руб./ед."
-FROM accruals ac
-JOIN contracts co ON ac.contract_id = co.contract_id
-JOIN clients cl ON co.client_id = cl.client_id
-JOIN services s ON co.service_id = s.service_id
-WHERE ac.period = '2024-01-01'
-    AND ac.consumption > 0
-ORDER BY cl.full_name, s.service_name;
+    c.full_name, 
+    cntr.contract_number, 
+    SUM(a.amount) as total_accrued
+FROM clients c
+JOIN contracts cntr ON c.client_id = cntr.client_id
+JOIN accruals a ON cntr.contract_id = a.contract_id
+WHERE c.client_id = 1
+GROUP BY c.full_name, cntr.contract_number;

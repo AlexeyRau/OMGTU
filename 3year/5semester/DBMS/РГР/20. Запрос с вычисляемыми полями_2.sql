@@ -1,18 +1,13 @@
-SELECT 
-    s.service_name AS "Услуга",
-    s.unit AS "Единица измерения",
-    COUNT(DISTINCT a.contract_id) AS "Кол-во договоров",
-    COUNT(a.accrual_id) AS "Кол-во начислений",
-    ROUND(AVG(a.consumption), 3) AS "Средний расход",
-    MAX(a.consumption) AS "Максимальный расход",
-    MIN(a.consumption) AS "Минимальный расход",
-    ROUND(STDDEV(a.consumption), 3) AS "Стандартное отклонение",
-    ROUND(AVG(a.amount), 2) AS "Средняя сумма",
-    SUM(a.amount) AS "Общая сумма начислений"
-FROM accruals a
-JOIN contracts c ON a.contract_id = c.contract_id
-JOIN services s ON c.service_id = s.service_id
-WHERE EXTRACT(YEAR FROM a.period) = 2024
-    AND a.consumption > 0
-GROUP BY s.service_id, s.service_name, s.unit
-ORDER BY "Общая сумма начислений" DESC;
+SELECT
+    c.client_id,
+    c.full_name,
+    c.client_type,
+    COALESCE(SUM(p.amount), 0) as total_paid,
+    CASE
+        WHEN COALESCE(SUM(p.amount), 0) < 1000 THEN 'Малый'
+        WHEN COALESCE(SUM(p.amount), 0) BETWEEN 1000 AND 5000 THEN 'Средний'
+        ELSE 'Крупный'
+    END as payment_category
+FROM clients c
+LEFT JOIN payments p ON c.client_id = p.client_id
+GROUP BY c.client_id, c.full_name, c.client_type;
