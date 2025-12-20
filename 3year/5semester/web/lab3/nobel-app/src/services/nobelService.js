@@ -1,36 +1,52 @@
-import api from './api'
+import ApiService from './ApiService'
 
 class NobelService {
-    async getLaureates(page = 0, limit = 10, filters = {}) {
+    async getNobelPrizes(options = {}) {
+        const {
+            offset = 0,
+            limit = 20,
+            sort = 'asc',
+            nobelPrizeYear,
+            yearTo,
+            nobelPrizeCategory
+        } = options
+
         const params = {
-            offset: page * limit,
-            limit: limit,
-            ...filters
+            offset,
+            limit,
+            sort
         }
 
-        Object.keys(params).forEach(key => {
-            if (params[key] === '' || params[key] === null || params[key] === undefined) {
-                delete params[key]
-            }
-        })
+        if (nobelPrizeYear) params.nobelPrizeYear = nobelPrizeYear
+        if (yearTo) params.yearTo = yearTo
+        if (nobelPrizeCategory) params.nobelPrizeCategory = nobelPrizeCategory
 
-        return api.get('/laureates', params)
+        return await ApiService.get('/nobelPrizes', params)
     }
 
-    async getNobelPrizes(page = 0, limit = 10, filters = {}) {
+    async getLaureates(options = {}) {
+        const {
+            offset = 0,
+            limit = 20,
+            sort = 'asc',
+            name,
+            gender,
+            nobelPrizeYear,
+            nobelPrizeCategory
+        } = options
+
         const params = {
-            offset: page * limit,
-            limit: limit,
-            ...filters
+            offset,
+            limit,
+            sort
         }
 
-        Object.keys(params).forEach(key => {
-            if (params[key] === '' || params[key] === null || params[key] === undefined) {
-                delete params[key]
-            }
-        })
+        if (name) params.name = name
+        if (gender) params.gender = gender
+        if (nobelPrizeYear) params.nobelPrizeYear = nobelPrizeYear
+        if (nobelPrizeCategory) params.nobelPrizeCategory = nobelPrizeCategory
 
-        return api.get('/nobelPrizes', params)
+        return await ApiService.get('/laureates', params)
     }
 }
 
