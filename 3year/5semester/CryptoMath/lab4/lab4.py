@@ -58,10 +58,6 @@ def split_into_blocks(nums, n):
         if candidate < n:
             current = candidate
         else:
-            if num == 0:
-                blocks.append(current)
-                current = 0
-                continue
             if current > 0:
                 blocks.append(current)
             current = num
@@ -82,43 +78,62 @@ def blocks_to_numbers(blocks):
         nums.extend(block_nums)
     return nums
 
-def generate_key_pair(p, q):
+def generate_multiple_key_pairs(p, q, count=3):
+    """
+    Генерация нескольких пар ключей RSA для заданных p и q.
+    Учебная версия - генерирует случайные значения e.
+    """
+    if count < 3:
+        count = 3
+    
     n = p * q
     phi = (p - 1) * (q - 1)
     
-    e_candidates = [3, 17, 257, 65537]
-    e = None
-    for candidate in e_candidates:
-        if 1 < candidate < phi and math.gcd(candidate, phi) == 1:
-            e = candidate
+    key_pairs = []
+    used_e_values = set()
+    
+    print(f"\n[Генерация {count} пар ключей]")
+    print(f"n = {p} * {q} = {n}")
+    print(f"φ(n) = ({p}-1)*({q}-1) = {phi}")
+    
+    for i in range(count):
+        attempts = 0
+        
+        while attempts < 1000:
+            attempts += 1
+            
+            e = random.randint(3, phi - 1)
+            
+            if math.gcd(e, phi) == 1 and e not in used_e_values:
+                try:
+                    d = mod_inverse(e, phi)
+                    
+                    key_pair = {
+                        'p': p, 'q': q, 'n': n, 'phi': phi,
+                        'public': (e, n),
+                        'private': (d, n),
+                        'e': e, 'd': d
+                    }
+                    
+                    key_pairs.append(key_pair)
+                    used_e_values.add(e)
+                    
+                    print(f"\n  Пара ключей #{i+1}:")
+                    print(f"    e = {e}")
+                    print(f"    d = {d}")
+                    print(f"    Проверка: e*d mod φ(n) = {(e * d) % phi}")
+                    
+                    break
+                    
+                except ValueError:
+                    continue
+        
+        if attempts >= 1000:
+            print(f"⚠️ Не удалось найти подходящее e для пары #{i+1}")
             break
     
-    if e is None:
-        e = random.randint(2, phi - 1)
-        while math.gcd(e, phi) != 1:
-            e = random.randint(2, phi - 1)
-    
-    d = mod_inverse(e, phi)
-    
-    return {
-        'p': p,
-        'q': q,
-        'n': n,
-        'phi': phi,
-        'public': (e, n),
-        'private': (d, n)
-    }
-
-def generate_multiple_key_pairs(p, q, count=3):
-    key_pairs = []
-    for i in range(count):
-        print(f"\nГенерация пары ключей #{i+1}...")
-        try:
-            key_pair = generate_key_pair(p, q)
-            key_pairs.append(key_pair)
-            print(f"Пара #{i+1}: e = {key_pair['public'][0]}, d = {key_pair['private'][0]}")
-        except Exception as e:
-            print(f"Ошибка при генерации пары #{i+1}: {e}")
+    if len(key_pairs) < count:
+        print(f"\n⚠️ Сгенерировано только {len(key_pairs)} пар из {count}")
     
     return key_pairs
 
@@ -141,8 +156,6 @@ def main():
     print("="*50)
     
     all_key_pairs = []
-    current_p = None
-    current_q = None
     
     while True:
         print_menu()
@@ -156,9 +169,6 @@ def main():
                 if p == q:
                     print("Ошибка: p и q должны быть разными!")
                     continue
-                
-                current_p = p
-                current_q = q
                 
                 count = int(input("Сколько пар ключей сгенерировать? (минимум 3): "))
                 if count < 3:
