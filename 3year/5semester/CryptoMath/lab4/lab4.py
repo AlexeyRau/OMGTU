@@ -23,15 +23,17 @@ def mod_inverse(e, phi):
         raise ValueError("Обратный элемент не существует")
     return x % phi
 
-def bin_pow(base, exp, mod):
-    result = 1
-    base = base % mod
-    while exp > 0:
-        if exp & 1:
-            result = (result * base) % mod
-        exp >>= 1
-        base = (base * base) % mod
-    return result
+def bin_pow(a, k, n):
+    b = 1
+    a = a % n
+    while k > 0:
+        if k % 2 == 0:
+            k //= 2
+            a = (a * a) % n
+        else:
+            k -= 1
+            b = (b * a) % n
+    return b
 
 def text_to_numbers(text):
     nums = []
@@ -56,6 +58,10 @@ def split_into_blocks(nums, n):
         if candidate < n:
             current = candidate
         else:
+            if num == 0:
+                blocks.append(current)
+                current = 0
+                continue
             if current > 0:
                 blocks.append(current)
             current = num
