@@ -69,7 +69,8 @@ def trial_division_factorization(n):
         if qs == 1:
             break
         
-        d = math.gcd(n, qs)
+        gcd_result, _, _ = extended_gcd(n, qs)
+        d = gcd_result
         if d > 1:
             for prime in primes:
                 if prime > d:
