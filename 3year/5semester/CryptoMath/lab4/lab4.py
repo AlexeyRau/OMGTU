@@ -102,8 +102,8 @@ def generate_multiple_key_pairs(p, q, count=3):
             attempts += 1
             
             e = random.randint(3, phi - 1)
-            
-            if math.gcd(e, phi) == 1 and e not in used_e_values:
+            gcd_result, _, _ = extended_gcd(e, phi)
+            if gcd_result == 1 and e not in used_e_values:
                 try:
                     d = mod_inverse(e, phi)
                     
@@ -128,13 +128,61 @@ def generate_multiple_key_pairs(p, q, count=3):
                     continue
         
         if attempts >= 1000:
-            print(f"⚠️ Не удалось найти подходящее e для пары #{i+1}")
+            print(f" Не удалось найти подходящее e для пары #{i+1}")
             break
     
     if len(key_pairs) < count:
-        print(f"\n⚠️ Сгенерировано только {len(key_pairs)} пар из {count}")
+        print(f"\n Сгенерировано только {len(key_pairs)} пар из {count}")
     
-    return key_pairs
+    return key_pairs, n, phi
+
+def generate_custom_key_pair(p, q, n, phi):
+    """Генерация ключевой пары с пользовательским e"""
+    print(f"\n[Генерация собственного ключа]")
+    print(f"Параметры: p={p}, q={q}, n={n}, φ(n)={phi}")
+    print(f"Условие: 1 < e < {phi}, НОД(e, φ(n)) = 1")
+    
+    while True:
+        try:
+            e = int(input(f"Введите ваше значение e (1 < e < {phi}): "))
+            
+            if e <= 1 or e >= phi:
+                print(f"✗ Ошибка: e должно быть в диапазоне (1, {phi})")
+                continue
+            
+            gcd_result, _, _ = extended_gcd(e, phi)
+
+            if gcd_result != 1:
+                print(f"✗ Ошибка: НОД({e}, {phi}) = {math.gcd(e, phi)} ≠ 1")
+                continue
+            
+            try:
+                d = mod_inverse(e, phi)
+                
+                key_pair = {
+                    'p': p, 'q': q, 'n': n, 'phi': phi,
+                    'public': (e, n),
+                    'private': (d, n),
+                    'e': e, 'd': d
+                }
+                
+                print(f"\n✓ Собственный ключ создан:")
+                print(f"   e = {e}")
+                print(f"   d = {d}")
+                print(f"   Проверка: e*d mod φ(n) = {(e * d) % phi}")
+                
+                return key_pair
+                
+            except ValueError as ve:
+                print(f"✗ Ошибка: {ve}")
+                print("Попробуйте другое значение e")
+                
+        except ValueError:
+            print("✗ Ошибка: введите целое число")
+        
+        choice = input("Попробовать снова? (y/n): ").lower().strip()
+        if choice != 'y':
+            return None
 
 def save_to_file(content, default_name="output.txt"):
     print("\n" + "="*40)
@@ -317,13 +365,24 @@ def main():
                 
                 print(f"\n[Генерация {count} пар ключей для p={p}, q={q}]")
                 
-                new_key_pairs = generate_multiple_key_pairs(p, q, count)
+                new_key_pairs, n, phi = generate_multiple_key_pairs(p, q, count)
                 all_key_pairs.extend(new_key_pairs)
                 
                 print(f"\n✓ Успешно сгенерировано {len(new_key_pairs)} пар ключей")
                 print(f"✓ Всего пар ключей в системе: {len(all_key_pairs)}")
                 
                 if new_key_pairs:
+                    print("\n" + "="*40)
+                    custom_key_choice = input("Сгенерировать собственный ключ? (y/n): ").lower().strip()
+                    
+                    if custom_key_choice == 'y':
+                        custom_key = generate_custom_key_pair(p, q, n, phi)
+                        if custom_key:
+                            all_key_pairs.append(custom_key)
+                            print(f"\n✓ Собственный ключ добавлен к списку")
+                            print(f"✓ Теперь всего пар ключей: {len(all_key_pairs)}")
+                
+                if new_key_pairs or (custom_key_choice == 'y' and 'custom_key' in locals()):
                     print("\n" + "="*40)
                     save_keys = input("Сохранить ключи в файл? (y/n): ").lower().strip()
                     if save_keys == 'y':
@@ -344,10 +403,17 @@ def main():
                                 f.write("="*50 + "\n\n")
                                 
                                 for i, kp in enumerate(new_key_pairs, 1):
-                                    f.write(f"ПАРА КЛЮЧЕЙ #{i}:\n")
+                                    f.write(f"ПАРА КЛЮЧЕЙ #{i} (случайная):\n")
                                     f.write(f"  Открытый ключ (e, n): ({kp['e']}, {kp['n']})\n")
                                     f.write(f"  Закрытый ключ (d, n): ({kp['d']}, {kp['n']})\n")
                                     f.write(f"  Проверка: e*d mod φ(n) = {(kp['e'] * kp['d']) % kp['phi']}\n")
+                                    f.write("-"*40 + "\n\n")
+                                
+                                if custom_key_choice == 'y' and 'custom_key' in locals() and custom_key:
+                                    f.write(f"ПАРА КЛЮЧЕЙ #{len(new_key_pairs) + 1} (собственная):\n")
+                                    f.write(f"  Открытый ключ (e, n): ({custom_key['e']}, {custom_key['n']})\n")
+                                    f.write(f"  Закрытый ключ (d, n): ({custom_key['d']}, {custom_key['n']})\n")
+                                    f.write(f"  Проверка: e*d mod φ(n) = {(custom_key['e'] * custom_key['d']) % custom_key['phi']}\n")
                                     f.write("-"*40 + "\n\n")
                             
                             print(f"✓ Ключи сохранены в файл: {filename}")
@@ -367,7 +433,8 @@ def main():
             print("\n[ВЫБОР КЛЮЧА ДЛЯ ШИФРОВАНИЯ]")
             for i, kp in enumerate(all_key_pairs):
                 e, n = kp['public']
-                print(f"{i+1:2d}. Открытый ключ: e={e:5d}, n={n:8d} (p={kp['p']}, q={kp['q']})")
+                is_custom = " (собственный)" if i >= len(all_key_pairs) - 1 and hasattr(kp, 'is_custom') else ""
+                print(f"{i+1:2d}. Открытый ключ: e={e:5d}, n={n:8d} {is_custom}")
             
             try:
                 key_idx = int(input(f"Выберите ключ (1-{len(all_key_pairs)}): ")) - 1
@@ -402,12 +469,6 @@ def main():
                 print(f"Зашифрованные блоки: {encrypted_blocks}")
                 print(f"Строка для передачи: {', '.join(map(str, encrypted_blocks))}")
                 
-                global last_encrypted_data
-                last_encrypted_data = {
-                    'blocks': encrypted_blocks,
-                    'key_idx': key_idx
-                }
-                
                 save_to_file(encrypted_blocks, "encrypted.txt")
                 
             except ValueError:
@@ -423,7 +484,8 @@ def main():
             print("\n[ВЫБОР КЛЮЧА ДЛЯ РАСШИФРОВАНИЯ]")
             for i, kp in enumerate(all_key_pairs):
                 d, n = kp['private']
-                print(f"{i+1:2d}. Закрытый ключ: d={d:5d}, n={n:8d} (p={kp['p']}, q={kp['q']})")
+                is_custom = " (собственный)" if i >= len(all_key_pairs) - 1 and hasattr(kp, 'is_custom') else ""
+                print(f"{i+1:2d}. Закрытый ключ: d={d:5d}, n={n:8d} {is_custom}")
             
             try:
                 key_idx = int(input(f"Выберите ключ (1-{len(all_key_pairs)}): ")) - 1
@@ -470,11 +532,13 @@ def main():
             print("="*70)
             
             for i, kp in enumerate(all_key_pairs):
-                print(f"\nПАРА КЛЮЧЕЙ #{i+1}:")
+                is_custom = " (собственный)" if i >= len(all_key_pairs) - 1 and hasattr(kp, 'is_custom') else ""
+                print(f"\nПАРА КЛЮЧЕЙ #{i+1}{is_custom}:")
                 print(f"  p = {kp['p']}, q = {kp['q']}")
                 print(f"  n = {kp['n']}, φ(n) = {kp['phi']}")
                 print(f"  Открытый ключ (e, n): ({kp['public'][0]}, {kp['public'][1]})")
                 print(f"  Закрытый ключ (d, n): ({kp['private'][0]}, {kp['private'][1]})")
+                print(f"  Проверка: e*d mod φ(n) = {(kp['e'] * kp['d']) % kp['phi']}")
                 print("-"*50)
         
         elif choice == '5':
