@@ -4,7 +4,9 @@ DECLARE
     cur_cursor CURSOR FOR
         SELECT 
             c.full_name,
-            c.contacts,
+            c.phone,
+            c.email,
+            c.address,
             a.accrual_id,
             a.period,
             a.amount
@@ -19,12 +21,16 @@ BEGIN
     LOOP
         FETCH cur_cursor INTO cur_rec;
         EXIT WHEN NOT FOUND;
-        RAISE NOTICE 'Клиент: %, Контакты: %, Начисление ID: %, Период: %, Сумма: % руб.',
+        
+        RAISE NOTICE 'Клиент: %, Телефон: %, Email: %, Адрес: %, Начисление ID: %, Период: %, Сумма: % руб.',
             cur_rec.full_name,
-            cur_rec.contacts,
+            cur_rec.phone,
+            COALESCE(cur_rec.email, 'не указан'),
+            COALESCE(cur_rec.address, 'не указан'),
             cur_rec.accrual_id,
             cur_rec.period,
             cur_rec.amount;
+            
     END LOOP;
     CLOSE cur_cursor;
 END $$;
