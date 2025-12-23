@@ -29,49 +29,91 @@ const columns = [
   { key: 'firstPrize', label: 'Первая премия' }
 ]
 
+function getName(laureate) {
+  if (laureate.knownName && laureate.knownName.en) {
+    return laureate.knownName.en
+  }
+  if (laureate.fullName && laureate.fullName.en) {
+    return laureate.fullName.en
+  }
+  if (laureate.orgName && laureate.orgName.en) {
+    return laureate.orgName.en
+  }
+  if (laureate.givenName && laureate.familyName) {
+    return `${laureate.givenName.en || ''} ${laureate.familyName.en || ''}`.trim()
+  }
+  return 'Неизвестно'
+}
+
+function getGender(laureate) {
+  if (laureate.gender === 'male') return 'Мужской'
+  if (laureate.gender === 'female') return 'Женский'
+  return 'Организация'
+}
+
+function getBirthDate(laureate) {
+  if (laureate.birth && laureate.birth.date) {
+    return laureate.birth.date.replace('0000-00-00', 'Неизвестно')
+  }
+  if (laureate.founded && laureate.founded.date) {
+    return laureate.founded.date.replace('0000-00-00', 'Неизвестно')
+  }
+  return 'Н/Д'
+}
+
+function getCountry(laureate) {
+  if (laureate.birth && laureate.birth.place) {
+    return laureate.birth.place.countryNow?.en ||
+      laureate.birth.place.country?.en || 'Н/Д'
+  }
+  if (laureate.founded && laureate.founded.place) {
+    return laureate.founded.place.countryNow?.en ||
+      laureate.founded.place.country?.en || 'Н/Д'
+  }
+  return 'Н/Д'
+}
+
 async function loadLaureates() {
   try {
     loading.value = true
     error.value = null
-    
+
     const offset = (pagination.value.currentPage - 1) * pagination.value.itemsPerPage
-    
+
     const options = {
       offset,
       limit: pagination.value.itemsPerPage,
       sort: 'asc'
     }
-    
+
     if (filters.value.name) options.name = filters.value.name
     if (filters.value.gender) options.gender = filters.value.gender
     if (filters.value.category) options.nobelPrizeCategory = filters.value.category
-    
+
     const response = await NobelService.getLaureates(options)
-    
+    console.log('API Response:', response)
+
     laureatesData.value = response.laureates.map(laureate => {
-      const person = laureate.laureateIfPerson
-      const org = laureate.laureateIfOrg
-      
+      console.log('Processing laureate:', laureate)
+
       return {
-        name: person?.knownName?.en || org?.orgName?.en || 'Неизвестно',
-        gender: person?.gender === 'male' ? 'Мужской' : 
-                person?.gender === 'female' ? 'Женский' : 'Организация',
-        birth: person?.birth?.date || org?.founded?.date || 'Н/Д',
-        country: person?.birth?.place?.countryNow?.en || 
-                org?.founded?.place?.countryNow?.en || 'Н/Д',
+        name: getName(laureate),
+        gender: getGender(laureate),
+        birth: getBirthDate(laureate),
+        country: getCountry(laureate),
         prizesCount: laureate.nobelPrizes?.length || 0,
         firstPrize: laureate.nobelPrizes?.[0]?.awardYear || 'Н/Д'
       }
     })
-    
+
     if (response.meta) {
       pagination.value.totalItems = response.meta.count || 0
       pagination.value.totalPages = Math.ceil(pagination.value.totalItems / pagination.value.itemsPerPage)
     }
-    
+
   } catch (err) {
     error.value = 'Ошибка при загрузке данных. Пожалуйста, попробуйте позже.'
-    console.error(err)
+    console.error('Load error:', err)
   } finally {
     loading.value = false
   }
@@ -90,7 +132,7 @@ function handleFilterChange(filter) {
   } else if (filter.type === 'category') {
     filters.value.category = filter.value
   }
-  
+
   pagination.value.currentPage = 1
   loadLaureates()
 }
@@ -129,60 +171,40 @@ const categoryOptions = [
 
 <template>
   <div>
-    <ReactiveTable 
-      :columns="columns"
-      :data="laureatesData"
-      :pagination="pagination"
-      :loading="loading"
-      title="Лауреаты Нобелевских премий"
-      @page-change="handlePageChange"
-      @filter-change="handleFilterChange"
-    >
+    <ReactiveTable :columns="columns" :data="laureatesData" :pagination="pagination" :loading="loading"
+      title="Лауреаты Нобелевских премий" @page-change="handlePageChange" @filter-change="handleFilterChange">
       <template #filters="{ applyFilter }">
         <div class="filters-container">
           <h3>Фильтры лауреатов</h3>
           <div class="filter-group">
             <div class="filter-item">
               <label>Имя:</label>
-              <input 
-                type="text" 
-                v-model="filters.name"
-                placeholder="Поиск по имени..."
-                @input="applyFilters"
-              />
+              <input type="text" v-model="filters.name" placeholder="Поиск по имени..." @input="applyFilters" />
             </div>
-            
+
             <div class="filter-item">
               <label>Пол:</label>
               <select v-model="filters.gender" @change="applyFilters">
-                <option 
-                  v-for="option in genderOptions" 
-                  :key="option.value" 
-                  :value="option.value"
-                >
+                <option v-for="option in genderOptions" :key="option.value" :value="option.value">
                   {{ option.label }}
                 </option>
               </select>
             </div>
-            
+
             <div class="filter-item">
               <label>Категория премии:</label>
               <select v-model="filters.category" @change="applyFilters">
-                <option 
-                  v-for="option in categoryOptions" 
-                  :key="option.value" 
-                  :value="option.value"
-                >
+                <option v-for="option in categoryOptions" :key="option.value" :value="option.value">
                   {{ option.label }}
                 </option>
               </select>
             </div>
-            
+
             <button @click="resetFilters" class="reset-btn">
               Сбросить
             </button>
           </div>
-          
+
           <div v-if="error" class="error-message">
             {{ error }}
           </div>
@@ -265,7 +287,7 @@ const categoryOptions = [
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .filter-item {
     min-width: auto;
   }

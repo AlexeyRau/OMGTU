@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import filedialog
 import math
 import matplotlib.pyplot as plt
+import sys
+from io import StringIO
 
 def get_text_input():
     print("\n" + "=" * 50)
@@ -112,22 +114,20 @@ def plot_results(results):
     plt.xticks(k_values)
     plt.tight_layout()
     
-    print("\nГрафик будет отображен в отдельном окне.")
     print("Закройте окно с графиком, чтобы продолжить работу программы.")
     plt.show()
 
-def print_results(results, cleaned_text):
-    print("\n" + "=" * 60)
-    print("РЕЗУЛЬТАТЫ АНАЛИЗА")
-    print("=" * 60)
-    print(f"Длина очищенного текста: {len(cleaned_text)} символов")
-    print("\nТаблица результатов:")
-    print("-" * 60)
-    print("k\tHk(T)\t\tHk(T)/k\t\tУникальных k-грамм")
-    print("-" * 60)
+def save_results_to_file(console_output, filename="results.txt"):
+    try:
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(console_output)
+        
+        print(f"Результаты успешно сохранены в файл: {filename}")
+        return True
     
-    for r in results:
-        print(f"{r['k']}\t{r['Hk']:.4f}\t\t{r['Hk_per_k']:.4f}\t\t{r['unique_kgrams']}")
+    except Exception as e:
+        print(f"Ошибка при сохранении в файл: {e}")
+        return False
 
 def main():
     print("=" * 60)
@@ -145,13 +145,34 @@ def main():
             print("Текст пустой. Попробуйте еще раз.")
             continue
         
+        old_stdout = sys.stdout
+        console_output = StringIO()
+        sys.stdout = console_output
+        
         analysis_result = analyze_text(text)
         if analysis_result is None:
+            sys.stdout = old_stdout
             continue
         
         results, cleaned_text = analysis_result
         
-        print_results(results, cleaned_text)
+        print("\n" + "=" * 60)
+        print("РЕЗУЛЬТАТЫ АНАЛИЗА")
+        print("=" * 60)
+        print(f"Длина очищенного текста: {len(cleaned_text)} символов")
+        print("\nТаблица результатов:")
+        print("-" * 60)
+        print("k\tHk(T)\t\tHk(T)/k\t\tУникальных k-грамм")
+        print("-" * 60)
+        
+        for r in results:
+            print(f"{r['k']}\t{r['Hk']:.4f}\t\t{r['Hk_per_k']:.4f}\t\t{r['unique_kgrams']}")
+        
+        sys.stdout = old_stdout
+        
+        full_output = console_output.getvalue()
+        
+        print(full_output)
         
         try:
             plot_results(results)
@@ -159,8 +180,20 @@ def main():
             print(f"Ошибка при построении графика: {e}")
         
         print("\n" + "=" * 60)
+        save_choice = input("Сохранить результаты в файл? (y/n): ").strip().lower()
+        
+        if save_choice == 'y':
+            filename = input("Введите имя файла (без расширения, по умолчанию 'results'): ").strip()
+            if not filename:
+                filename = "results"
+            if not filename.endswith('.txt'):
+                filename += '.txt'
+            
+            save_results_to_file(full_output, filename)
+        
+        print("\n" + "=" * 60)
         choice = input("Хотите проанализировать другой текст? (y/n): ").strip().lower()
-        if choice not in 'y':
+        if choice != 'y':
             break
     
     print("\nПрограмма завершена.")
