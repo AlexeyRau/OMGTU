@@ -73,9 +73,19 @@ def get_text_input():
     
     if choice == '1':
         print("\n"+"="*50)
-        return input("Введите текст: ")
+        text = input("Введите текст: ")
+        cleaned_text = ''.join([char for char in text if char in russian_alphabet])
+        print(f"Текст после очистки: {cleaned_text}")
+        print(f"Длина очищенного текста: {len(cleaned_text)} символов")
+        return cleaned_text
     elif choice == '2':
-        return read_from_file_dialog()
+        text = read_from_file_dialog()
+        if text:
+            cleaned_text = ''.join([char for char in text if char in russian_alphabet])
+            print(f"Текст после очистки: {cleaned_text}")
+            print(f"Длина очищенного текста: {len(cleaned_text)} символов")
+            return cleaned_text
+        return None
     else:
         print("Неверный выбор!")
         return None

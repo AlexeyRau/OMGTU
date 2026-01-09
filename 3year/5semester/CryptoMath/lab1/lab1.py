@@ -4,7 +4,7 @@ from tkinter import filedialog
 import matplotlib
 matplotlib.use('TkAgg') 
 
-dir_path = "D:\\OMGTU\\OMGTU\\3year\\5semester\\CryptoMath\\lab1\\lab1"
+dir_path = "A:\\OMGTU\\OMGTU\\3year\\5semester\\CryptoMath\\lab1"
 
 alphabet = 'абвгдежзийклмнопрстуфхцчшщъыьэюя'
 m = len(alphabet)
@@ -207,7 +207,7 @@ def main():
                 print("=================================================")
             
         elif choice == '3':
-            ciphertext_variant_14 = "чпмечпыхкоэвкщшзькщшсшъкцпхшбчеяшлтомшыыькхшчщъшьтмцчпчтуымпькшотчфкфщъпроптэлть"
+            ciphertext_variant_14 = "ауцаугзмэьвифвгжзехввгуауцгчсувъдгцъщэзъъехжжищгябгю"
             data = ""
             results = brute_force(ciphertext_variant_14)
             for key, decrypted in results:
@@ -252,7 +252,7 @@ def main():
                 
 
             key, text = results[right_key - 1]
-            author_work = "лермонтовсмертьпоэта"
+            author_work = "лермонтовродина"
             encrypted_author_work = encrypt(author_work, 10)
             
             print("=================================================")
