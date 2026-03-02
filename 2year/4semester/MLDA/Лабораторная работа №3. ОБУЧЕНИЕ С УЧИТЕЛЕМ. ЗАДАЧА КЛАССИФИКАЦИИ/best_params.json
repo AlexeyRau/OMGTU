@@ -1,0 +1,103 @@
+{
+    "LogisticRegression": {
+        "GridSearchCV": {
+            "best_params": {
+                "C": 1,
+                "penalty": "l2",
+                "solver": "lbfgs"
+            },
+            "best_score": 0.5133117296135455,
+            "duration": 2.5200181007385254
+        },
+        "RandomizedSearchCV": {
+            "best_params": {
+                "C": 2.481040974867813,
+                "penalty": "l2",
+                "solver": "lbfgs"
+            },
+            "best_score": 0.5133117296135455,
+            "duration": 0.8785746097564697
+        },
+        "Optuna": {
+            "best_params": {
+                "C": 0.5378126977481881,
+                "solver": "lbfgs",
+                "penalty": "l2"
+            },
+            "best_score": 0.5133117296135455,
+            "duration": 2.5079574584960938
+        }
+    },
+    "kNN": {
+        "GridSearchCV": {
+            "best_params": {
+                "n_neighbors": 3
+            },
+            "best_score": 0.618053362284511,
+            "duration": 0.8147821426391602
+        },
+        "RandomizedSearchCV": {
+            "best_params": {
+                "n_neighbors": 5
+            },
+            "best_score": 0.5889732259323134,
+            "duration": 2.760503053665161
+        },
+        "Optuna": {
+            "best_params": {
+                "n_neighbors": 3
+            },
+            "best_score": 0.618053362284511,
+            "duration": 7.036293268203735
+        }
+    },
+    "NaiveBayes": {
+        "GridSearchCV": {
+            "best_params": {
+                "var_smoothing": 1e-09
+            },
+            "best_score": 0.4976530730036038,
+            "duration": 0.16069698333740234
+        },
+        "RandomizedSearchCV": {
+            "best_params": {
+                "var_smoothing": 7.459343285726553e-09
+            },
+            "best_score": 0.4976530730036038,
+            "duration": 0.326754093170166
+        },
+        "Optuna": {
+            "best_params": {
+                "var_smoothing": 4.934013324781409e-06
+            },
+            "best_score": 0.4976530730036038,
+            "duration": 1.9527907371520996
+        }
+    },
+    "SVM": {
+        "GridSearchCV": {
+            "best_params": {
+                "C": 10,
+                "kernel": "rbf"
+            },
+            "best_score": 0.6365185862405718,
+            "duration": 484.6265151500702
+        },
+        "RandomizedSearchCV": {
+            "best_params": {
+                "C": 21.368329072358772,
+                "kernel": "rbf"
+            },
+            "best_score": 0.6431856915614474,
+            "duration": 1058.5103771686554
+        },
+        "Optuna": {
+            "best_params": {
+                "kernel": "rbf",
+                "C": 94.66772172596771
+            },
+            "best_score": 0.6492388079687309,
+            "duration": 2310.490874528885
+        }
+    }
+}
