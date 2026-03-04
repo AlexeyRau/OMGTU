@@ -1,0 +1,72 @@
+{
+  "DecisionTreeRegressor_GridSearchCV": {
+    "params": {
+      "model__criterion": "squared_error",
+      "model__max_depth": 10,
+      "model__min_samples_leaf": 10,
+      "model__min_samples_split": 2
+    },
+    "score": 0.8075001090637768
+  },
+  "DecisionTreeRegressor_RandomizedSearchCV": {
+    "params": {
+      "model__criterion": "squared_error",
+      "model__max_depth": 26,
+      "model__min_samples_leaf": 13,
+      "model__min_samples_split": 42
+    },
+    "score": 0.8074887532193962
+  },
+  "RandomForestRegressor_RandomizedSearchCV": {
+    "params": {
+      "model__max_depth": 26,
+      "model__min_samples_leaf": 2,
+      "model__min_samples_split": 13,
+      "model__n_estimators": 211
+    },
+    "score": 0.8475072620721977
+  },
+  "GradientBoostingRegressor_GridSearchCV": {
+    "params": {
+      "model__learning_rate": 0.1,
+      "model__max_depth": 7,
+      "model__n_estimators": 150
+    },
+    "score": 0.8555856794140784
+  },
+  "BaggingRegressor_GridSearchCV": {
+    "params": {
+      "model__bootstrap": true,
+      "model__max_features": 0.5,
+      "model__max_samples": 1.0,
+      "model__n_estimators": 100
+    },
+    "score": 0.8476547686529416
+  },
+  "CatBoostRegressor_GridSearchCV": {
+    "params": {
+      "model__depth": 8,
+      "model__iterations": 200,
+      "model__learning_rate": 0.1
+    },
+    "score": 0.8511680147687413
+  },
+  "XGBRegressor_GridSearchCV": {
+    "params": {
+      "model__learning_rate": 0.1,
+      "model__max_depth": 6,
+      "model__n_estimators": 200,
+      "model__subsample": 1.0
+    },
+    "score": 0.8557981252670288
+  },
+  "LGBMRegressor_GridSearchCV": {
+    "params": {
+      "model__learning_rate": 0.05,
+      "model__n_estimators": 200,
+      "model__num_leaves": 31,
+      "model__subsample": 0.8
+    },
+    "score": 0.8324868603430059
+  }
+}

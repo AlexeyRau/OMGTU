@@ -1,0 +1,175 @@
+{
+  "LogisticRegression": {
+    "GridSearchCV": {
+      "best_params": {
+        "C": 1,
+        "penalty": "l2",
+        "solver": "lbfgs"
+      },
+      "best_score": 0.5133117296135455,
+      "duration": 2.5200181007385254
+    },
+    "RandomizedSearchCV": {
+      "best_params": {
+        "C": 2.481040974867813,
+        "penalty": "l2",
+        "solver": "lbfgs"
+      },
+      "best_score": 0.5133117296135455,
+      "duration": 0.8785746097564697
+    },
+    "Optuna": {
+      "best_params": {
+        "C": 0.5378126977481881,
+        "solver": "lbfgs",
+        "penalty": "l2"
+      },
+      "best_score": 0.5133117296135455,
+      "duration": 2.5079574584960938
+    }
+  },
+  "kNN": {
+    "GridSearchCV": {
+      "best_params": {
+        "n_neighbors": 3
+      },
+      "best_score": 0.618053362284511,
+      "duration": 0.8147821426391602
+    },
+    "RandomizedSearchCV": {
+      "best_params": {
+        "n_neighbors": 5
+      },
+      "best_score": 0.5889732259323134,
+      "duration": 2.760503053665161
+    },
+    "Optuna": {
+      "best_params": {
+        "n_neighbors": 3
+      },
+      "best_score": 0.618053362284511,
+      "duration": 7.036293268203735
+    }
+  },
+  "NaiveBayes": {
+    "GridSearchCV": {
+      "best_params": {
+        "var_smoothing": 1e-09
+      },
+      "best_score": 0.4976530730036038,
+      "duration": 0.16069698333740234
+    },
+    "RandomizedSearchCV": {
+      "best_params": {
+        "var_smoothing": 7.459343285726553e-09
+      },
+      "best_score": 0.4976530730036038,
+      "duration": 0.326754093170166
+    },
+    "Optuna": {
+      "best_params": {
+        "var_smoothing": 4.934013324781409e-06
+      },
+      "best_score": 0.4976530730036038,
+      "duration": 1.9527907371520996
+    }
+  },
+  "SVM": {
+    "GridSearchCV": {
+      "best_params": {
+        "C": 10,
+        "kernel": "rbf"
+      },
+      "best_score": 0.6365185862405718,
+      "duration": 484.6265151500702
+    },
+    "RandomizedSearchCV": {
+      "best_params": {
+        "C": 21.368329072358772,
+        "kernel": "rbf"
+      },
+      "best_score": 0.6431856915614474,
+      "duration": 1058.5103771686554
+    },
+    "Optuna": {
+      "best_params": {
+        "kernel": "rbf",
+        "C": 94.66772172596771
+      },
+      "best_score": 0.6492388079687309,
+      "duration": 2310.490874528885
+    }
+  },
+  "DecisionTreeClassifier_GridSearchCV": {
+    "params": {
+      "model__class_weight": null,
+      "model__criterion": "entropy",
+      "model__max_depth": 5,
+      "model__min_samples_leaf": 5
+    },
+    "score": 0.3998862647766223
+  },
+  "DecisionTreeClassifier_RandomizedSearchCV": {
+    "params": {
+      "model__class_weight": "balanced",
+      "model__criterion": "log_loss",
+      "model__max_depth": 5,
+      "model__min_samples_leaf": 1,
+      "model__min_samples_split": 6
+    },
+    "score": 0.3998322077074231
+  },
+  "RandomForestClassifier_RandomizedSearchCV": {
+    "params": {
+      "model__criterion": "entropy",
+      "model__max_depth": 5,
+      "model__min_samples_leaf": 8,
+      "model__min_samples_split": 12,
+      "model__n_estimators": 292
+    },
+    "score": 0.4238813115205698
+  },
+  "GradientBoostingClassifier_RandomizedSearchCV": {
+    "params": {
+      "model__learning_rate": 0.0430533878126005,
+      "model__max_depth": 2,
+      "model__n_estimators": 120,
+      "model__subsample": 0.7693605922825478
+    },
+    "score": 0.4179603152431254
+  },
+  "BaggingClassifier_GridSearchCV": {
+    "params": {
+      "model__bootstrap": true,
+      "model__max_features": 0.5,
+      "model__max_samples": 0.5,
+      "model__n_estimators": 100
+    },
+    "score": 0.40681697658570004
+  },
+  "CatBoostClassifier_GridSearchCV": {
+    "params": {
+      "model__depth": 4,
+      "model__iterations": 100,
+      "model__learning_rate": 0.05
+    },
+    "score": 0.4197093748114765
+  },
+  "XGBClassifier_GridSearchCV": {
+    "params": {
+      "model__learning_rate": 0.05,
+      "model__max_depth": 3,
+      "model__n_estimators": 100,
+      "model__subsample": 0.8
+    },
+    "score": 0.4161295862675936
+  },
+  "LGBMClassifier_GridSearchCV": {
+    "params": {
+      "model__learning_rate": 0.05,
+      "model__n_estimators": 100,
+      "model__num_leaves": 31
+    },
+    "score": 0.3667368412788859
+  }
+}
