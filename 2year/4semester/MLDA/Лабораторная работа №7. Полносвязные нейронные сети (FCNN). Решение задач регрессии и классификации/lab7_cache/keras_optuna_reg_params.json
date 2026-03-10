@@ -1,0 +1,1 @@
+{"n_layers": 4, "units_l0": 103, "dropout_l0": 0.16680589396927975, "units_l1": 104, "dropout_l1": 0.1109141432022081, "units_l2": 194, "dropout_l2": 0.01323577034970115, "units_l3": 164, "dropout_l3": 0.15550767791455447, "optimizer": "rmsprop", "lr": 0.0009054807043187644}
