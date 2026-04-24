@@ -1,5 +1,4 @@
 import os
-import pathlib
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer, CrossEncoder
 from qdrant_client import QdrantClient
@@ -7,8 +6,6 @@ from ollama import Client as OllamaClient
 
 load_dotenv()
 
-# Инициализация моделей и клиентов
-print("Загружаем модели...")
 embedder = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
 reranker = CrossEncoder("DiTy/cross-encoder-russian-msmarco")
 qdrant = QdrantClient(
@@ -16,18 +13,15 @@ qdrant = QdrantClient(
     api_key=os.environ["QDRANT_API_KEY"],
 )
 ollama = OllamaClient()
-print("✓ Всё загружено")
-
 
 def retrieve(query: str, top_k: int = 10) -> list[dict]:
-    """Шаг 1: ищем top_k похожих статей в Qdrant"""
     query_vector = embedder.encode(query).tolist()
     
     results = qdrant.query_points(
         collection_name="constitution",
         query=query_vector,
         limit=top_k
-    ).points  # <- важно, достаём список точек из объекта результата
+    ).points
 
     return [
         {
@@ -39,9 +33,7 @@ def retrieve(query: str, top_k: int = 10) -> list[dict]:
         for r in results
     ]
 
-
 def rerank(query: str, candidates: list[dict], top_n: int = 3) -> list[dict]:
-    """Шаг 2: реранкер выбирает top_n самых релевантных из кандидатов"""
     pairs = [[query, c["text"]] for c in candidates]
     scores = reranker.predict(pairs)
 
@@ -78,14 +70,10 @@ def build_prompt(query: str, docs: list[dict]) -> str:
 
 
 def ask(query: str) -> dict:
-    """Полный RAG-пайплайн: от вопроса до ответа"""
-    # 1. Поиск
     candidates = retrieve(query, top_k=10)
 
-    # 2. Реранкинг
     top_docs = rerank(query, candidates, top_n=3)
 
-    # 3. Формируем промпт и спрашиваем LLM
     prompt = build_prompt(query, top_docs)
     response = ollama.chat(
         model="qwen2.5:7b",
@@ -106,7 +94,6 @@ def ask(query: str) -> dict:
 
 
 if __name__ == "__main__":
-    # Тестируем
     test_queries = [
         "Какие права имеет человек на свободу слова?",
         "Кто является верховным главнокомандующим?",

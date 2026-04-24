@@ -14,32 +14,25 @@ def load_chunks(path: str) -> list[dict]:
 if __name__ == "__main__":
     script_dir = pathlib.Path(__file__).parent.resolve()
 
-    # Загружаем чанки
     chunks_path = script_dir / "data" / "chunks.json"
-    print("Загружаем чанки...")
+    print("Загрузка чанков...")
     chunks = load_chunks(str(chunks_path))
     print(f"Загружено чанков: {len(chunks)}")
 
-    # Загружаем модель для эмбеддингов
-    print("\nЗагружаем модель для эмбеддингов...")
+    print("\nЗагрузка модели для эмбеддингов...")
     model = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
-    print("✓ Модель загружена")
+    print("Модель загружена")
 
-    # Векторизуем тексты
-    print("\nВекторизуем чанки...")
+    print("\nВекторизация чанков...")
     texts = [chunk["text"] for chunk in chunks]
     embeddings = model.encode(texts, show_progress_bar=True)
-    print(f"✓ Размерность эмбеддингов: {embeddings.shape[1]}")
+    print(f"Размерность эмбеддингов: {embeddings.shape[1]}")
 
-    # Подключаемся к Qdrant Cloud
-    print("\nПодключаемся к Qdrant Cloud...")
     client = QdrantClient(
         url=os.environ["QDRANT_URL"],
         api_key=os.environ["QDRANT_API_KEY"],
     )
-    print("✓ Подключение установлено")
 
-    # Создаём коллекцию (удаляем старую если есть)
     collection_name = "constitution"
     existing = [c.name for c in client.get_collections().collections]
     if collection_name in existing:
@@ -49,13 +42,12 @@ if __name__ == "__main__":
     client.create_collection(
         collection_name=collection_name,
         vectors_config=VectorParams(
-            size=embeddings.shape[1],  # 768 для mpnet
+            size=embeddings.shape[1],
             distance=Distance.COSINE
         )
     )
-    print(f"✓ Коллекция '{collection_name}' создана")
+    print(f"Коллекция '{collection_name}' создана")
 
-    # Формируем точки для загрузки
     points = [
         PointStruct(
             id=i,
@@ -69,13 +61,8 @@ if __name__ == "__main__":
         for i, chunk in enumerate(chunks)
     ]
 
-    # Загружаем в Qdrant
-    print(f"\nЗагружаем {len(points)} векторов в Qdrant...")
+    print(f"\nЗагрузка {len(points)} векторов в Qdrant...")
     client.upsert(
         collection_name=collection_name,
         points=points
     )
-
-    # Проверяем
-    count = client.get_collection(collection_name).points_count
-    print(f"✓ Сохранено документов: {count}")

@@ -1,5 +1,4 @@
 import os
-import pathlib
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -11,7 +10,6 @@ import re
 
 load_dotenv()
 
-# Глобальные переменные для моделей
 embedder = None
 reranker = None
 qdrant = None
@@ -20,9 +18,8 @@ ollama = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Загружаем модели один раз при старте сервера"""
     global embedder, reranker, qdrant, ollama
-    print("Загружаем модели...")
+    print("Загрузка моделей...")
     embedder = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
     reranker = CrossEncoder("DiTy/cross-encoder-russian-msmarco")
     qdrant = QdrantClient(
@@ -30,7 +27,7 @@ async def lifespan(app: FastAPI):
         api_key=os.environ["QDRANT_API_KEY"],
     )
     ollama = OllamaClient()
-    print("✓ Модели загружены, сервер готов")
+    print("Модели загружены, сервер готов")
     yield
     print("Сервер останавливается...")
 
@@ -41,9 +38,6 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
-
-
-# --- Схемы запроса и ответа ---
 
 class QueryRequest(BaseModel):
     query: str
@@ -56,9 +50,6 @@ class Source(BaseModel):
 class QueryResponse(BaseModel):
     answer: str
     sources: list[Source]
-
-
-# --- Вспомогательные функции (те же что в 03_rag_pipeline.py) ---
 
 def retrieve(query: str, top_k: int = 15) -> list[dict]:
     query_vector = embedder.encode(query).tolist()
@@ -77,7 +68,6 @@ def retrieve(query: str, top_k: int = 15) -> list[dict]:
         for r in results
     ]
 
-
 def rerank(query: str, candidates: list[dict], top_n: int = 5) -> list[dict]:
     pairs = [[query, c["text"]] for c in candidates]
     scores = reranker.predict(pairs)
@@ -91,7 +81,6 @@ def is_relevant(top_docs: list[dict], threshold: float = 0.05) -> bool:
     if not top_docs:
         return False
     return top_docs[0]["rerank_score"] >= threshold
-
 
 def build_prompt(query: str, docs: list[dict]) -> str:
     context = ""
@@ -143,14 +132,12 @@ def ask(request: QueryRequest):
     candidates = retrieve(request.query)
     top_docs = rerank(request.query, candidates)
 
-    # Проверяем релевантность по score реранкера
     if not is_relevant(top_docs, threshold=0.01):
         return QueryResponse(
             answer="Ваш вопрос не относится к Конституции Российской Федерации. Пожалуйста, задайте вопрос по тексту Конституции.",
             sources=[]
         )
     prompt = build_prompt(request.query, top_docs)
-
 
     response = ollama.chat(
         model="qwen2.5:7b",
