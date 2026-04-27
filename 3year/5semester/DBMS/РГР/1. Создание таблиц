@@ -1,0 +1,74 @@
+-- Таблица клиентов
+CREATE TABLE Client (
+    client_id   SERIAL PRIMARY KEY,
+    client_type VARCHAR(20)  NOT NULL CHECK (client_type IN ('физическое лицо', 'юридическое лицо')),
+    full_name   VARCHAR(255) NOT NULL,
+    address     TEXT         NOT NULL,
+    phone       VARCHAR(20)  NOT NULL,
+    email       VARCHAR(100)
+);
+ 
+-- Справочник видов услуг
+CREATE TABLE ServiceType (
+    service_type_id SERIAL PRIMARY KEY,
+    name            VARCHAR(50) NOT NULL UNIQUE,
+    unit            VARCHAR(20) NOT NULL
+);
+ 
+-- Тарифы (история)
+CREATE TABLE Tariff (
+    tariff_id       SERIAL PRIMARY KEY,
+    service_type_id INT            NOT NULL REFERENCES ServiceType(service_type_id),
+    price_per_unit  DECIMAL(12,4)  NOT NULL CHECK (price_per_unit > 0),
+    valid_from      DATE           NOT NULL,
+    valid_to        DATE,
+    CHECK (valid_to IS NULL OR valid_to > valid_from)
+);
+ 
+-- Договоры
+CREATE TABLE Contract (
+    contract_id     SERIAL PRIMARY KEY,
+    client_id       INT  NOT NULL REFERENCES Client(client_id),
+    service_type_id INT  NOT NULL REFERENCES ServiceType(service_type_id),
+    start_date      DATE NOT NULL,
+    end_date        DATE,
+    CHECK (end_date IS NULL OR end_date > start_date)
+);
+ 
+-- Приборы учёта
+CREATE TABLE Meter (
+    meter_id        SERIAL PRIMARY KEY,
+    contract_id     INT           NOT NULL REFERENCES Contract(contract_id),
+    serial_number   VARCHAR(50)   NOT NULL UNIQUE,
+    install_date    DATE          NOT NULL,
+    initial_reading DECIMAL(12,4) NOT NULL CHECK (initial_reading >= 0)
+);
+ 
+-- Показания приборов учёта
+CREATE TABLE MeterReading (
+    reading_id    SERIAL PRIMARY KEY,
+    meter_id      INT           NOT NULL REFERENCES Meter(meter_id),
+    reading_value DECIMAL(12,4) NOT NULL CHECK (reading_value >= 0),
+    reading_date  DATE          NOT NULL
+);
+ 
+-- Начисления
+CREATE TABLE Charge (
+    charge_id   SERIAL PRIMARY KEY,
+    contract_id INT           NOT NULL REFERENCES Contract(contract_id),
+    reading_id  INT           NOT NULL UNIQUE REFERENCES MeterReading(reading_id),
+    tariff_id   INT           NOT NULL REFERENCES Tariff(tariff_id),
+    consumption DECIMAL(12,4) NOT NULL CHECK (consumption >= 0),
+    amount      DECIMAL(12,4) NOT NULL CHECK (amount >= 0),
+    charge_date DATE          NOT NULL,
+    paid_amount DECIMAL(12,4) NOT NULL DEFAULT 0 CHECK (paid_amount >= 0)
+);
+ 
+-- Платежи
+CREATE TABLE Payment (
+    payment_id   SERIAL PRIMARY KEY,
+    client_id    INT           NOT NULL REFERENCES Client(client_id),
+    amount       DECIMAL(12,4) NOT NULL CHECK (amount > 0),
+    payment_date DATE          NOT NULL,
+    note         TEXT
+);

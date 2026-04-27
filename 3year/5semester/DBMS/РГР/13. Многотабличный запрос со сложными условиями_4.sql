@@ -1,3 +1,0 @@
-SELECT * 
-FROM payments
-WHERE amount NOT BETWEEN 100 AND 2000;
