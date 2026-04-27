@@ -1,0 +1,2 @@
+SELECT * FROM Charge
+WHERE amount > 1000 OR consumption > 50;

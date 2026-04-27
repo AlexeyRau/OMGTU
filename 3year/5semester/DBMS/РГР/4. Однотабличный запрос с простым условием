@@ -1,0 +1,2 @@
+SELECT * FROM Client WHERE client_type = 'физическое';
+

@@ -1,26 +1,8 @@
--- Ускорение поиска договоров по клиенту
-CREATE INDEX idx_contract_client ON Contract(client_id);
- 
--- Ускорение поиска договоров по виду услуги
-CREATE INDEX idx_contract_service ON Contract(service_type_id);
- 
--- Ускорение поиска счётчиков по договору
-CREATE INDEX idx_meter_contract ON Meter(contract_id);
- 
--- Ускорение поиска показаний по прибору
-CREATE INDEX idx_reading_meter ON MeterReading(meter_id);
- 
--- Ускорение поиска показаний по дате
-CREATE INDEX idx_reading_date ON MeterReading(reading_date);
- 
--- Ускорение поиска начислений по договору
-CREATE INDEX idx_charge_contract ON Charge(contract_id);
- 
--- Ускорение поиска начислений по дате
-CREATE INDEX idx_charge_date ON Charge(charge_date);
- 
--- Ускорение поиска платежей по клиенту
-CREATE INDEX idx_payment_client ON Payment(client_id);
- 
--- Ускорение поиска тарифов по виду услуги
-CREATE INDEX idx_tariff_service ON Tariff(service_type_id);
+-- Индексы
+CREATE INDEX idx_contract_client   ON Contract(client_id);
+CREATE INDEX idx_meter_contract    ON Meter(contract_id);
+CREATE INDEX idx_reading_meter     ON MeterReading(meter_id);
+CREATE INDEX idx_reading_date      ON MeterReading(reading_date);
+CREATE INDEX idx_charge_contract   ON Charge(contract_id);
+CREATE INDEX idx_charge_date       ON Charge(charge_date);
+CREATE INDEX idx_payment_client    ON Payment(client_id);
