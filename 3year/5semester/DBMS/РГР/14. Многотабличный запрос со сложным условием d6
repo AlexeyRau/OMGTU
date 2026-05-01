@@ -1,0 +1,7 @@
+SELECT cl.full_name, cl.client_type
+FROM Client cl
+JOIN Contract co ON cl.client_id = co.client_id
+WHERE cl.client_id NOT IN (
+    SELECT DISTINCT client_id
+    FROM Payment
+);

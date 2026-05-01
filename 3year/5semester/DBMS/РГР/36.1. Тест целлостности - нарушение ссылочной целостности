@@ -1,0 +1,4 @@
+BEGIN;
+INSERT INTO Contract (client_id, service_type_id, start_date)
+VALUES (9999, 1, '2024-01-01');
+ROLLBACK;

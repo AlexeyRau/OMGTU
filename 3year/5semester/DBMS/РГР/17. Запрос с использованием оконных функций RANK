@@ -1,0 +1,11 @@
+SELECT
+    cl.full_name AS клиент,
+    COALESCE(SUM(ch.amount - ch.paid_amount), 0) AS общий_долг,
+    RANK() OVER (
+        ORDER BY COALESCE(SUM(ch.amount - ch.paid_amount), 0) DESC
+    ) AS ранг
+FROM Client cl
+LEFT JOIN Contract co ON cl.client_id   = co.client_id
+LEFT JOIN Charge   ch ON co.contract_id = ch.contract_id
+GROUP BY cl.client_id, cl.full_name
+ORDER BY ранг;

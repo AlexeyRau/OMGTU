@@ -1,0 +1,6 @@
+SELECT *
+FROM Charge
+WHERE amount > (
+    SELECT AVG(amount)
+    FROM Charge
+);

@@ -1,0 +1,7 @@
+SELECT
+    full_name            AS клиент,
+    client_type          AS тип,
+    услуга,
+    ROUND(общий_долг, 2) AS долг_руб
+FROM mv_client_debt
+ORDER BY общий_долг DESC;

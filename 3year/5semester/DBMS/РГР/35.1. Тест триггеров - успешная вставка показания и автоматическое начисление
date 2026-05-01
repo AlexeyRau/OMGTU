@@ -1,0 +1,5 @@
+BEGIN;
+INSERT INTO MeterReading (meter_id, reading_value, reading_date)
+VALUES (1, 55.0000, '2024-04-30');
+SELECT * FROM Charge ORDER BY charge_id DESC LIMIT 1;
+ROLLBACK;

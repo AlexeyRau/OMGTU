@@ -1,6 +1,0 @@
-SELECT * FROM Payment
-WHERE amount >= 500  
-AND amount <= 2000  
-AND NOT (payment_date >= '2024-02-01'
-AND payment_date <= '2024-02-29');
-

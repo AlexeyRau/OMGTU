@@ -1,0 +1,14 @@
+SELECT *
+FROM Charge
+WHERE amount > ANY (
+    SELECT p.amount
+    FROM Payment p
+    JOIN Client cl ON p.client_id = cl.client_id
+    WHERE cl.client_type = 'физическое'
+)
+AND amount < ALL (
+    SELECT p.amount
+    FROM Payment p
+    JOIN Client cl ON p.client_id = cl.client_id
+    WHERE cl.client_type = 'юридическое'
+);

@@ -1,0 +1,11 @@
+SELECT
+    ch.charge_id,
+    cl.full_name                         AS клиент,
+    st.name                              AS услуга,
+    ch.amount                            AS начислено,
+    ch.paid_amount                       AS оплачено,
+    ROUND(ch.amount - ch.paid_amount, 2) AS долг
+FROM Charge ch
+JOIN Contract    co ON ch.contract_id      = co.contract_id
+JOIN Client      cl ON co.client_id        = cl.client_id
+JOIN ServiceType st ON co.service_type_id  = st.service_type_id;

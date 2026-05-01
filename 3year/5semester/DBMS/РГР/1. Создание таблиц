@@ -1,3 +1,12 @@
+DROP TABLE IF EXISTS Payment;
+DROP TABLE IF EXISTS Charge;
+DROP TABLE IF EXISTS MeterReading;
+DROP TABLE IF EXISTS Meter;
+DROP TABLE IF EXISTS Contract;
+DROP TABLE IF EXISTS Client;
+DROP TABLE IF EXISTS Tariff;
+DROP TABLE IF EXISTS ServiceType;
+
 -- Справочник видов услуг
 CREATE TABLE ServiceType (
   service_type_id SERIAL PRIMARY KEY,

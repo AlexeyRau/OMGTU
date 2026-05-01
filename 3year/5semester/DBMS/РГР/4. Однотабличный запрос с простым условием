@@ -1,2 +1,3 @@
-SELECT * FROM Client WHERE client_type = 'физическое';
-
+SELECT *
+FROM Client
+WHERE client_type = 'физическое';

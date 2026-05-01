@@ -1,0 +1,10 @@
+SELECT
+    st.name             AS услуга,
+    COUNT(ch.charge_id) AS кол_начислений,
+    SUM(ch.amount)      AS итого_начислено,
+    SUM(ch.paid_amount) AS итого_оплачено
+FROM Charge      ch
+JOIN Contract    co ON ch.contract_id      = co.contract_id
+JOIN ServiceType st ON co.service_type_id  = st.service_type_id
+GROUP BY st.name
+ORDER BY итого_начислено DESC;

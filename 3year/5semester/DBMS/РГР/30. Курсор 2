@@ -1,0 +1,25 @@
+DO $$
+DECLARE
+    cur_jan CURSOR FOR
+        SELECT
+            cl.full_name    AS клиент,
+            st.name         AS услуга,
+            mr.reading_value,
+            mr.reading_date
+        FROM MeterReading mr
+        JOIN Meter       m  ON mr.meter_id         = m.meter_id
+        JOIN Contract    co ON m.contract_id        = co.contract_id
+        JOIN Client      cl ON co.client_id         = cl.client_id
+        JOIN ServiceType st ON co.service_type_id   = st.service_type_id
+        WHERE mr.reading_date BETWEEN '2024-01-01' AND '2024-01-31';
+    rec RECORD;
+BEGIN
+    OPEN cur_jan;
+    LOOP
+        FETCH cur_jan INTO rec;
+        EXIT WHEN NOT FOUND;
+        RAISE NOTICE 'Клиент: %, услуга: %, показание: % от %',
+            rec.клиент, rec.услуга, rec.reading_value, rec.reading_date;
+    END LOOP;
+    CLOSE cur_jan;
+END $$;

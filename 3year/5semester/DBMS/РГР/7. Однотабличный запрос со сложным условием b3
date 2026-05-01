@@ -1,0 +1,5 @@
+SELECT *
+FROM Charge
+WHERE paid_amount < amount
+  AND charge_date >= '2024-01-01'
+  AND charge_date <= '2024-01-31';

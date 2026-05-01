@@ -1,3 +1,10 @@
+DROP INDEX IF EXISTS idx_contract_client;
+DROP INDEX IF EXISTS idx_meter_contract;
+DROP INDEX IF EXISTS idx_reading_meter;
+DROP INDEX IF EXISTS idx_reading_date;
+DROP INDEX IF EXISTS idx_charge_contract;
+DROP INDEX IF EXISTS idx_charge_date;
+DROP INDEX IF EXISTS idx_payment_client;
 -- Индексы
 CREATE INDEX idx_contract_client   ON Contract(client_id);
 CREATE INDEX idx_meter_contract    ON Meter(contract_id);

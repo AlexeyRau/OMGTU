@@ -1,0 +1,5 @@
+SELECT p.*
+FROM Payment p
+JOIN Client cl ON p.client_id = cl.client_id
+WHERE cl.client_type = 'юридическое'
+  AND p.payment_date NOT BETWEEN '2024-01-01' AND '2024-02-28';
