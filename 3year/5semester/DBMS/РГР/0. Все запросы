@@ -1,0 +1,756 @@
+1. Создание таблиц
+
+DROP TABLE IF EXISTS Payment;
+DROP TABLE IF EXISTS Charge;
+DROP TABLE IF EXISTS MeterReading;
+DROP TABLE IF EXISTS Meter;
+DROP TABLE IF EXISTS Contract;
+DROP TABLE IF EXISTS Client;
+DROP TABLE IF EXISTS Tariff;
+DROP TABLE IF EXISTS ServiceType;
+
+-- Справочник видов услуг
+CREATE TABLE ServiceType (
+  service_type_id SERIAL PRIMARY KEY,
+  name            VARCHAR(50)  NOT NULL UNIQUE,
+  unit            VARCHAR(20)  NOT NULL
+);
+
+-- Тарифы
+CREATE TABLE Tariff (
+  tariff_id        SERIAL PRIMARY KEY,
+  service_type_id  INT          NOT NULL REFERENCES ServiceType(service_type_id),
+  price_per_unit   DECIMAL(12,4) NOT NULL CHECK (price_per_unit > 0),
+  valid_from       DATE         NOT NULL,
+  valid_to         DATE
+);
+
+-- Клиенты
+CREATE TABLE Client (
+  client_id   SERIAL PRIMARY KEY,
+  client_type VARCHAR(20)  NOT NULL CHECK (client_type IN ('физическое','юридическое')),
+  full_name   VARCHAR(255) NOT NULL,
+  address     TEXT         NOT NULL,
+  phone       VARCHAR(20)  NOT NULL,
+  email       VARCHAR(100)
+);
+
+-- Договоры
+CREATE TABLE Contract (
+  contract_id      SERIAL PRIMARY KEY,
+  client_id        INT  NOT NULL REFERENCES Client(client_id),
+  service_type_id  INT  NOT NULL REFERENCES ServiceType(service_type_id),
+  start_date       DATE NOT NULL,
+  end_date         DATE
+);
+
+-- Приборы учёта
+CREATE TABLE Meter (
+  meter_id        SERIAL PRIMARY KEY,
+  contract_id     INT          NOT NULL REFERENCES Contract(contract_id),
+  serial_number   VARCHAR(50)  NOT NULL UNIQUE,
+  install_date    DATE         NOT NULL,
+  initial_reading DECIMAL(12,4) NOT NULL
+);
+
+-- Показания
+CREATE TABLE MeterReading (
+  reading_id    SERIAL PRIMARY KEY,
+  meter_id      INT          NOT NULL REFERENCES Meter(meter_id),
+  reading_value DECIMAL(12,4) NOT NULL,
+  reading_date  DATE         NOT NULL
+);
+
+-- Начисления
+CREATE TABLE Charge (
+  charge_id   SERIAL PRIMARY KEY,
+  contract_id INT          NOT NULL REFERENCES Contract(contract_id),
+  reading_id  INT          NOT NULL UNIQUE REFERENCES MeterReading(reading_id),
+  tariff_id   INT          NOT NULL REFERENCES Tariff(tariff_id),
+  consumption DECIMAL(12,4) NOT NULL,
+  amount      DECIMAL(12,4) NOT NULL,
+  charge_date DATE         NOT NULL,
+  paid_amount DECIMAL(12,4) NOT NULL DEFAULT 0
+);
+
+-- Платежи
+CREATE TABLE Payment (
+  payment_id   SERIAL PRIMARY KEY,
+  client_id    INT          NOT NULL REFERENCES Client(client_id),
+  amount       DECIMAL(12,4) NOT NULL CHECK (amount > 0),
+  payment_date DATE         NOT NULL,
+  note         TEXT
+);
+
+2. Индексы
+
+DROP INDEX IF EXISTS idx_contract_client;
+DROP INDEX IF EXISTS idx_meter_contract;
+DROP INDEX IF EXISTS idx_reading_meter;
+DROP INDEX IF EXISTS idx_reading_date;
+DROP INDEX IF EXISTS idx_charge_contract;
+DROP INDEX IF EXISTS idx_charge_date;
+DROP INDEX IF EXISTS idx_payment_client;
+-- Индексы
+CREATE INDEX idx_contract_client   ON Contract(client_id);
+CREATE INDEX idx_meter_contract    ON Meter(contract_id);
+CREATE INDEX idx_reading_meter     ON MeterReading(meter_id);
+CREATE INDEX idx_reading_date      ON MeterReading(reading_date);
+CREATE INDEX idx_charge_contract   ON Charge(contract_id);
+CREATE INDEX idx_charge_date       ON Charge(charge_date);
+CREATE INDEX idx_payment_client    ON Payment(client_id);
+
+3. Заполнение данными
+
+TRUNCATE TABLE 
+    Payment, 
+    Charge, 
+    MeterReading, 
+    Meter, 
+    Contract, 
+    Client, 
+    Tariff, 
+    ServiceType 
+RESTART IDENTITY CASCADE;
+
+INSERT INTO ServiceType (name, unit) VALUES
+  ('Водоснабжение',    'м³'),
+  ('Электроснабжение', 'кВт·ч'),
+  ('Газоснабжение',    'м³');
+
+INSERT INTO Tariff (service_type_id, price_per_unit, valid_from) VALUES
+  (1, 45.50,  '2024-01-01'),
+  (2, 5.84,   '2024-01-01'),
+  (3, 8.72,   '2024-01-01');
+
+INSERT INTO Client (client_type, full_name, address, phone, email) VALUES
+  ('физическое','Иванов Иван Иванович',     'ул. Ленина, 5, кв.10','79131234567','ivanov@mail.ru'),
+  ('физическое','Петрова Мария Сергеевна',  'ул. Мира, 12, кв.3', '79135550011','petrova@mail.ru'),
+  ('физическое','Сидоров Алексей Петрович', 'пр. Победы, 7, кв.21','79137778899','sidorov@mail.ru'),
+  ('юридическое','ООО "СтройСервис"',       'ул. Промышленная, 1','79131112233','stroy@biz.ru'),
+  ('юридическое','АО "ТехноПром"',          'ул. Заводская, 15',  '79134445566','techno@biz.ru');
+
+INSERT INTO Contract (client_id, service_type_id, start_date) VALUES
+  (1,1,'2023-01-01'),(1,2,'2023-01-01'),(2,1,'2023-03-01'),
+  (3,3,'2022-06-01'),(4,1,'2021-09-01'),(4,2,'2021-09-01'),
+  (5,3,'2022-01-01'),(5,2,'2022-01-01'),(2,3,'2023-05-01'),
+  (3,2,'2022-08-01');
+
+INSERT INTO Meter (contract_id, serial_number, install_date, initial_reading) VALUES
+  (1,'WM-0001','2023-01-10',0),(2,'EM-0001','2023-01-10',0),
+  (3,'WM-0002','2023-03-05',0),(4,'GM-0001','2022-06-15',0),
+  (5,'WM-0003','2021-09-20',0),(6,'EM-0002','2021-09-20',0),
+  (7,'GM-0002','2022-01-12',0),(8,'EM-0003','2022-01-12',0),
+  (9,'GM-0003','2023-05-05',0),(10,'EM-0004','2022-08-01',0);
+
+INSERT INTO MeterReading (meter_id, reading_value, reading_date) VALUES
+  (1,12.5000,'2024-01-31'),(1,26.1000,'2024-02-29'),(1,41.3000,'2024-03-31'),
+  (2,310.0000,'2024-01-31'),(2,618.0000,'2024-02-29'),(2,945.0000,'2024-03-31'),
+  (3,8.0000,'2024-01-31'), (4,55.2000,'2024-01-31'),(5,30.0000,'2024-01-31'),
+  (6,420.0000,'2024-01-31'),(7,72.4000,'2024-01-31'),(8,380.0000,'2024-01-31'),
+  (9,18.6000,'2024-01-31'),(10,500.0000,'2024-01-31'),(3,17.5000,'2024-02-29'),
+  (4,67.0000,'2024-02-29'),(5,58.0000,'2024-02-29'),(6,830.0000,'2024-02-29');
+
+INSERT INTO Charge (contract_id, reading_id, tariff_id, consumption, amount, charge_date) VALUES
+  (1,1,1,12.5000,568.75,'2024-01-31'),
+  (1,2,1,13.6000,618.80,'2024-02-29'),
+  (1,3,1,15.2000,691.60,'2024-03-31'),
+  (2,4,2,310.0000,1810.40,'2024-01-31'),
+  (2,5,2,308.0000,1798.72,'2024-02-29'),
+  (2,6,2,327.0000,1909.68,'2024-03-31'),
+  (3,7,1,8.0000,364.00,'2024-01-31'),
+  (4,8,3,55.2000,481.34,'2024-01-31'),
+  (5,9,1,30.0000,1365.00,'2024-01-31'),
+  (6,10,2,420.0000,2452.80,'2024-01-31');
+  (7, 11, 3, 72.4000, 630.93, '2024-01-31');
+
+INSERT INTO Payment (client_id, amount, payment_date, note) VALUES
+  (1,1200.00,'2024-02-10','Оплата за январь'),
+  (1,620.00,'2024-03-12','Оплата за февраль'),
+  (2,364.00,'2024-02-15','Оплата за январь'),
+  (3,481.34,'2024-02-20','Оплата за январь'),
+  (4,3800.00,'2024-02-08','Оплата счетов'),
+  (4, 2500.00, '2024-04-05', 'Оплата за март');
+
+4. Однотабличный запрос с простым условием
+
+SELECT *
+FROM Client
+WHERE client_type = 'физическое';
+
+5. Однотабличный запрос со сложным условием b1
+
+SELECT * FROM Charge
+WHERE charge_date >= '2024-01-01'
+  AND amount > 500
+  AND NOT consumption = 0;
+
+6. Однотабличный запрос со сложным условием b2
+
+SELECT * FROM Charge
+WHERE charge_date >= '2024-01-01'
+  AND (amount > 1000 OR consumption > 50);
+
+7. Однотабличный запрос со сложным условием b3
+
+SELECT * FROM Charge
+WHERE paid_amount < amount
+  AND charge_date >= '2024-01-01'
+  AND charge_date <= '2024-01-31';
+
+8. Многотабличный запрос с вычисляемым полем и простым условием
+
+SELECT
+    cl.full_name AS клиент,
+    st.name AS услуга,
+    ROUND(ch.amount - ch.paid_amount, 2) AS долг_руб
+FROM Charge ch
+JOIN Contract co ON ch.contract_id = co.contract_id
+JOIN Client cl ON co.client_id = cl.client_id
+JOIN ServiceType st ON co.service_type_id = st.service_type_id
+WHERE ch.paid_amount < ch.amount;
+
+9. Многотабличный запрос со сложным условием d1
+
+SELECT ch.*
+FROM Charge ch
+JOIN Contract co ON ch.contract_id = co.contract_id
+WHERE (co.service_type_id = 1 OR co.service_type_id = 3)
+  AND ch.charge_date = '2024-01-31'
+  AND NOT ch.consumption = 0;
+
+10. Многотабличный запрос со сложным условием d2
+
+SELECT ch.*
+FROM Charge ch
+JOIN Contract co ON ch.contract_id = co.contract_id
+WHERE co.service_type_id = 2
+  AND ch.consumption > 300
+  AND ch.amount > 1500;
+
+11. Многотабличный запрос со сложным условием d3
+
+SELECT mr.*
+FROM MeterReading mr
+JOIN Meter       m  ON mr.meter_id     = m.meter_id
+JOIN Contract    co ON m.contract_id   = co.contract_id
+WHERE co.service_type_id = 1
+  AND mr.reading_date BETWEEN '2024-01-01' AND '2024-03-31';
+
+12. Многотабличный запрос со сложным условием d4
+
+SELECT p.*
+FROM Payment p
+JOIN Client cl ON p.client_id = cl.client_id
+WHERE cl.client_type = 'юридическое'
+  AND p.payment_date NOT BETWEEN '2024-01-01' AND '2024-02-28';
+
+13. Многотабличный запрос со сложным условием d5
+
+SELECT cl.full_name AS клиент, st.name AS услуга, ch.amount, ch.charge_date
+FROM Charge ch
+JOIN Contract    co ON ch.contract_id      = co.contract_id
+JOIN Client      cl ON co.client_id        = cl.client_id
+JOIN ServiceType st ON co.service_type_id  = st.service_type_id
+WHERE st.name IN ('Водоснабжение', 'Газоснабжение');
+
+14. Многотабличный запрос со сложным условием d6
+
+SELECT cl.full_name, cl.client_type
+FROM Client cl
+JOIN Contract co ON cl.client_id = co.client_id
+WHERE cl.client_id NOT IN (
+    SELECT DISTINCT client_id
+    FROM Payment
+);
+
+15. Запрос с использованием оконных функций ROW_NUMBER
+
+SELECT
+    cl.full_name AS клиент,
+    ch.charge_date,
+    ch.amount,
+    ROW_NUMBER() OVER (
+        PARTITION BY co.client_id
+        ORDER BY ch.charge_date
+    ) AS номер_начисления
+FROM Charge ch
+JOIN Contract co ON ch.contract_id = co.contract_id
+JOIN Client cl ON co.client_id = cl.client_id;
+
+16. Запрос с использованием оконных функций SUM OVER
+
+SELECT
+    cl.full_name   AS клиент,
+    ch.charge_date,
+    ch.amount,
+    SUM(ch.amount) OVER (
+        PARTITION BY co.client_id
+        ORDER BY ch.charge_date
+        ROWS UNBOUNDED PRECEDING
+    )              AS накопительная_сумма
+FROM Charge ch
+JOIN Contract co ON ch.contract_id = co.contract_id
+JOIN Client   cl ON co.client_id   = cl.client_id
+ORDER BY cl.full_name, ch.charge_date;
+
+17. Запрос с использованием оконных функций RANK
+
+SELECT
+    cl.full_name AS клиент,
+    COALESCE(SUM(ch.amount - ch.paid_amount), 0) AS общий_долг,
+    RANK() OVER (
+        ORDER BY COALESCE(SUM(ch.amount - ch.paid_amount), 0) DESC
+    ) AS ранг
+FROM Client cl
+LEFT JOIN Contract co ON cl.client_id   = co.client_id
+LEFT JOIN Charge   ch ON co.contract_id = ch.contract_id
+GROUP BY cl.client_id, cl.full_name
+ORDER BY ранг;
+
+18. Запрос с вычисляемыми полями 1
+
+SELECT
+    ch.charge_id,
+    cl.full_name                         AS клиент,
+    st.name                              AS услуга,
+    ch.amount                            AS начислено,
+    ch.paid_amount                       AS оплачено,
+    ROUND(ch.amount - ch.paid_amount, 2) AS долг
+FROM Charge ch
+JOIN Contract    co ON ch.contract_id      = co.contract_id
+JOIN Client      cl ON co.client_id        = cl.client_id
+JOIN ServiceType st ON co.service_type_id  = st.service_type_id;
+
+19. Запрос с вычисляемыми полями 2
+
+SELECT
+    mr.reading_id,
+    cl.full_name AS клиент,
+    st.name AS услуга,
+    mr.reading_value AS показание,
+    t.price_per_unit AS тариф,
+    ROUND(mr.reading_value * t.price_per_unit, 2) AS расчётная_сумма
+FROM MeterReading mr
+JOIN Meter m  ON mr.meter_id = m.meter_id
+JOIN Contract co ON m.contract_id = co.contract_id
+JOIN Client cl ON co.client_id = cl.client_id
+JOIN ServiceType st ON co.service_type_id = st.service_type_id
+JOIN Tariff t  ON co.service_type_id = t.service_type_id
+WHERE t.valid_to IS NULL;
+
+20. Запрос с агрегатными функциями 1
+
+SELECT
+    st.name             AS услуга,
+    COUNT(ch.charge_id) AS кол_начислений,
+    SUM(ch.amount)      AS итого_начислено,
+    SUM(ch.paid_amount) AS итого_оплачено
+FROM Charge      ch
+JOIN Contract    co ON ch.contract_id      = co.contract_id
+JOIN ServiceType st ON co.service_type_id  = st.service_type_id
+GROUP BY st.name
+ORDER BY итого_начислено DESC;
+
+21. Запрос с агрегатными функциями 2
+
+SELECT
+    cl.client_type                   AS тип_клиента,
+    cl.full_name                     AS клиент,
+    st.name                          AS услуга,
+    COUNT(ch.charge_id)              AS кол_начислений,
+    ROUND(AVG(ch.amount), 2)         AS средняя_сумма
+FROM Charge      ch
+JOIN Contract    co ON ch.contract_id      = co.contract_id
+JOIN Client      cl ON co.client_id        = cl.client_id
+JOIN ServiceType st ON co.service_type_id  = st.service_type_id
+GROUP BY cl.client_type, cl.full_name, st.name
+HAVING SUM(ch.amount - ch.paid_amount) > 0
+ORDER BY cl.client_type ASC,
+         cl.full_name   ASC,
+         средняя_сумма  DESC;
+
+22. Запрос с использованием подзапроса 1
+
+SELECT *
+FROM Charge
+WHERE amount > (
+    SELECT AVG(amount)
+    FROM Charge
+);
+
+22. Запрос с использованием подзапроса 2
+
+SELECT *
+FROM Client
+WHERE client_id IN (
+    SELECT DISTINCT client_id
+    FROM Contract
+)
+AND client_id NOT IN (
+    SELECT DISTINCT client_id
+    FROM Payment
+);
+
+24. Запрос с использованием подзапроса 3
+
+SELECT *
+FROM Charge
+WHERE amount > ANY (
+    SELECT p.amount
+    FROM Payment p
+    JOIN Client cl ON p.client_id = cl.client_id
+    WHERE cl.client_type = 'физическое'
+)
+AND amount < ALL (
+    SELECT p.amount
+    FROM Payment p
+    JOIN Client cl ON p.client_id = cl.client_id
+    WHERE cl.client_type = 'юридическое'
+);
+
+25. Запрос с использованием подзапроса 4
+
+SELECT *
+FROM Client cl
+WHERE EXISTS (
+    SELECT 1
+    FROM Contract  co
+    JOIN Charge    ch ON co.contract_id = ch.contract_id
+    WHERE co.client_id = cl.client_id
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM Payment p
+    WHERE p.client_id = cl.client_id
+);
+
+26. Запрос на основе материализованного представления
+
+DROP MATERIALIZED VIEW IF EXISTS mv_client_debt;
+
+CREATE MATERIALIZED VIEW mv_client_debt AS
+SELECT
+    cl.client_id,
+    cl.full_name,
+    cl.client_type,
+    st.name                          AS услуга,
+    SUM(ch.amount - ch.paid_amount)  AS общий_долг,
+    COUNT(ch.charge_id)              AS кол_начислений
+FROM Client      cl
+JOIN Contract    co ON cl.client_id        = co.client_id
+JOIN Charge      ch ON co.contract_id      = ch.contract_id
+JOIN ServiceType st ON co.service_type_id  = st.service_type_id
+WHERE ch.paid_amount < ch.amount
+GROUP BY cl.client_id, cl.full_name, cl.client_type, st.name;
+ 
+SELECT
+    full_name            AS клиент,
+    client_type          AS тип,
+    услуга,
+    ROUND(общий_долг, 2) AS долг_руб
+FROM mv_client_debt
+ORDER BY общий_долг DESC;
+
+27.1. Создание мат. представления mv_client_debt
+
+DROP MATERIALIZED VIEW IF EXISTS mv_client_debt;
+
+CREATE MATERIALIZED VIEW mv_client_debt AS
+SELECT
+    cl.client_id,
+    cl.full_name,
+    cl.client_type,
+    st.name                          AS услуга,
+    SUM(ch.amount - ch.paid_amount)  AS общий_долг,
+    COUNT(ch.charge_id)              AS кол_начислений
+FROM Client      cl
+JOIN Contract    co ON cl.client_id        = co.client_id
+JOIN Charge      ch ON co.contract_id      = ch.contract_id
+JOIN ServiceType st ON co.service_type_id  = st.service_type_id
+WHERE ch.paid_amount < ch.amount
+GROUP BY cl.client_id, cl.full_name, cl.client_type, st.name;
+
+27.2. Проверка mv_client_debt
+
+SELECT
+    full_name            AS клиент,
+    client_type          AS тип,
+    услуга,
+    ROUND(общий_долг, 2) AS долг_руб
+FROM mv_client_debt
+ORDER BY общий_долг DESC;
+
+28.1. Создание мат. представления mv_monthly_consumption
+
+CREATE MATERIALIZED VIEW mv_monthly_consumption AS
+SELECT
+    m.meter_id,
+    st.name                                           AS услуга,
+    DATE_TRUNC('month', mr.reading_date)              AS период,
+    COUNT(mr.reading_id)                              AS кол_показаний,
+    MAX(mr.reading_value) - MIN(mr.reading_value)     AS потребление
+FROM MeterReading mr
+JOIN Meter       m  ON mr.meter_id         = m.meter_id
+JOIN Contract    co ON m.contract_id       = co.contract_id
+JOIN ServiceType st ON co.service_type_id  = st.service_type_id
+GROUP BY m.meter_id, st.name, DATE_TRUNC('month', mr.reading_date);
+
+28.2. Проверка mv_monthly_consumption
+
+SELECT *
+FROM mv_monthly_consumption
+ORDER BY период, meter_id;
+
+29. Курсор 1
+
+DO $$
+DECLARE
+    cur_debt CURSOR FOR
+        SELECT
+            cl.full_name,
+            cl.client_type,
+            SUM(ch.amount - ch.paid_amount) AS долг
+        FROM Client   cl
+        JOIN Contract co ON cl.client_id   = co.client_id
+        JOIN Charge   ch ON co.contract_id = ch.contract_id
+        WHERE ch.paid_amount < ch.amount
+        GROUP BY cl.client_id, cl.full_name, cl.client_type;
+    rec RECORD;
+BEGIN
+    OPEN cur_debt;
+    LOOP
+        FETCH cur_debt INTO rec;
+        EXIT WHEN NOT FOUND;
+        RAISE NOTICE 'Должник: % (%) — долг: % руб.',
+            rec.full_name, rec.client_type, ROUND(rec.долг, 2);
+    END LOOP;
+    CLOSE cur_debt;
+END $$;
+
+30. Курсор 2
+
+DO $$
+DECLARE
+    cur_jan CURSOR FOR
+        SELECT
+            cl.full_name    AS клиент,
+            st.name         AS услуга,
+            mr.reading_value,
+            mr.reading_date
+        FROM MeterReading mr
+        JOIN Meter       m  ON mr.meter_id         = m.meter_id
+        JOIN Contract    co ON m.contract_id        = co.contract_id
+        JOIN Client      cl ON co.client_id         = cl.client_id
+        JOIN ServiceType st ON co.service_type_id   = st.service_type_id
+        WHERE mr.reading_date BETWEEN '2024-01-01' AND '2024-01-31';
+    rec RECORD;
+BEGIN
+    OPEN cur_jan;
+    LOOP
+        FETCH cur_jan INTO rec;
+        EXIT WHEN NOT FOUND;
+        RAISE NOTICE 'Клиент: %, услуга: %, показание: % от %',
+            rec.клиент, rec.услуга, rec.reading_value, rec.reading_date;
+    END LOOP;
+    CLOSE cur_jan;
+END $$;
+
+31.1. Создание функции
+
+CREATE OR REPLACE FUNCTION get_client_debt(p_client_id INT)
+RETURNS DECIMAL(12,2)
+AS $$
+DECLARE
+    v_debt DECIMAL(12,2);
+BEGIN
+    SELECT COALESCE(SUM(ch.amount - ch.paid_amount), 0)
+      INTO v_debt
+    FROM Contract co
+    JOIN Charge   ch ON co.contract_id = ch.contract_id
+    WHERE co.client_id = p_client_id;
+ 
+    RETURN v_debt;
+END;
+$$ LANGUAGE plpgsql;
+
+31.2. Проверка функции
+
+SELECT
+    full_name                   AS клиент,
+    get_client_debt(client_id)  AS долг_руб
+FROM Client
+ORDER BY долг_руб DESC;
+
+32.1. Создание процедуры
+
+CREATE OR REPLACE PROCEDURE distribute_payment(
+    p_client_id  INT,
+    p_amount     DECIMAL(12,2),
+    p_date       DATE DEFAULT CURRENT_DATE
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_remaining DECIMAL(12,2) := p_amount;
+    rec         RECORD;
+BEGIN
+    INSERT INTO Payment (client_id, amount, payment_date)
+    VALUES (p_client_id, p_amount, p_date);
+ 
+    FOR rec IN
+        SELECT ch.charge_id,
+               ch.amount - ch.paid_amount AS долг
+        FROM Charge   ch
+        JOIN Contract co ON ch.contract_id = co.contract_id
+        WHERE co.client_id   = p_client_id
+          AND ch.paid_amount < ch.amount
+        ORDER BY ch.charge_date
+    LOOP
+        EXIT WHEN v_remaining <= 0;
+ 
+        IF v_remaining >= rec.долг THEN
+            UPDATE Charge
+               SET paid_amount = amount
+             WHERE charge_id = rec.charge_id;
+            v_remaining := v_remaining - rec.долг;
+        ELSE
+            UPDATE Charge
+               SET paid_amount = paid_amount + v_remaining
+             WHERE charge_id = rec.charge_id;
+            v_remaining := 0;
+        END IF;
+    END LOOP;
+ 
+    RAISE NOTICE 'Платёж % руб. распределён. Остаток: % руб.',
+        p_amount, v_remaining;
+END;
+$$;
+
+32.2. Проверка процедуры
+
+CALL distribute_payment(2, 500.00, '2024-04-01');
+
+33. Триггер trg_check_reading
+
+DROP TRIGGER IF EXISTS trg_check_reading ON MeterReading;
+
+CREATE OR REPLACE FUNCTION trg_check_reading_fn()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_prev DECIMAL(12,4);
+BEGIN
+    SELECT COALESCE(
+        MAX(reading_value),
+        (SELECT initial_reading FROM Meter WHERE meter_id = NEW.meter_id)
+    )
+    INTO v_prev
+    FROM MeterReading
+    WHERE meter_id     = NEW.meter_id
+      AND reading_date < NEW.reading_date;
+ 
+    IF NEW.reading_value < v_prev THEN
+        RAISE EXCEPTION
+            'Ошибка: новое показание (%) не может быть меньше предыдущего (%).',
+            NEW.reading_value, v_prev;
+    END IF;
+ 
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+ 
+CREATE TRIGGER trg_check_reading
+BEFORE INSERT ON MeterReading
+FOR EACH ROW
+EXECUTE FUNCTION trg_check_reading_fn();
+
+34. Триггер trg_create_charge
+
+DROP TRIGGER IF EXISTS trg_create_charge ON MeterReading;
+
+CREATE OR REPLACE FUNCTION trg_create_charge_fn()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_prev_val    DECIMAL(12,4);
+    v_contract_id INT;
+    v_service_id  INT;
+    v_tariff_id   INT;
+    v_price       DECIMAL(12,4);
+    v_consumption DECIMAL(12,4);
+BEGIN
+    SELECT COALESCE(
+        MAX(reading_value),
+        (SELECT initial_reading FROM Meter WHERE meter_id = NEW.meter_id)
+    )
+    INTO v_prev_val
+    FROM MeterReading
+    WHERE meter_id     = NEW.meter_id
+      AND reading_date < NEW.reading_date;
+ 
+    SELECT m.contract_id, co.service_type_id
+      INTO v_contract_id, v_service_id
+    FROM Meter    m
+    JOIN Contract co ON m.contract_id = co.contract_id
+    WHERE m.meter_id = NEW.meter_id;
+ 
+    SELECT tariff_id, price_per_unit
+      INTO v_tariff_id, v_price
+    FROM Tariff
+    WHERE service_type_id = v_service_id
+      AND valid_from      <= NEW.reading_date
+      AND (valid_to IS NULL OR valid_to >= NEW.reading_date)
+    ORDER BY valid_from DESC
+    LIMIT 1;
+ 
+    v_consumption := NEW.reading_value - v_prev_val;
+ 
+    INSERT INTO Charge (contract_id, reading_id, tariff_id,
+                        consumption, amount, charge_date)
+    VALUES (v_contract_id, NEW.reading_id, v_tariff_id,
+            v_consumption,
+            ROUND(v_consumption * v_price, 2),
+            NEW.reading_date);
+ 
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+ 
+CREATE TRIGGER trg_create_charge
+AFTER INSERT ON MeterReading
+FOR EACH ROW
+EXECUTE FUNCTION trg_create_charge_fn();
+
+35.1. Тест триггеров - успешная вставка показания и автоматическое начисление
+
+BEGIN;
+INSERT INTO MeterReading (meter_id, reading_value, reading_date)
+VALUES (1, 55.0000, '2024-04-30');
+SELECT * FROM Charge ORDER BY charge_id DESC LIMIT 1;
+ROLLBACK;
+
+35.2. Тест триггеров - ошибка при вставке некорректного показания
+
+BEGIN;
+INSERT INTO MeterReading (meter_id, reading_value, reading_date)
+VALUES (1, 1.0000, '2024-04-30');
+ROLLBACK;
+
+36.1. Тест целлостности - нарушение ссылочной целостности
+
+BEGIN;
+INSERT INTO Contract (client_id, service_type_id, start_date)
+VALUES (9999, 1, '2024-01-01');
+ROLLBACK;
+
+36.2. Тест целлостности - нарушение ограничения CHECK
+
+BEGIN;
+INSERT INTO Payment (client_id, amount, payment_date)
+VALUES (1, -500.00, '2024-01-15');
+ROLLBACK;
+
+36.3. Тест целлостности - нарушение семантической целостности через триггер
+
+BEGIN;
+INSERT INTO MeterReading (meter_id, reading_value, reading_date)
+VALUES (1, 0.0001, '2024-04-30');
+ROLLBACK;

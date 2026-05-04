@@ -1,5 +1,4 @@
-SELECT *
-FROM Charge
+SELECT * FROM Charge
 WHERE charge_date >= '2024-01-01'
   AND amount > 500
   AND NOT consumption = 0;
