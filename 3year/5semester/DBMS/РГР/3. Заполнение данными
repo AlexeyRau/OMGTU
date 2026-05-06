@@ -57,7 +57,7 @@ INSERT INTO Charge (contract_id, reading_id, tariff_id, consumption, amount, cha
   (3,7,1,8.0000,364.00,'2024-01-31'),
   (4,8,3,55.2000,481.34,'2024-01-31'),
   (5,9,1,30.0000,1365.00,'2024-01-31'),
-  (6,10,2,420.0000,2452.80,'2024-01-31');
+  (6,10,2,420.0000,2452.80,'2024-01-31'),
   (7, 11, 3, 72.4000, 630.93, '2024-01-31');
 
 INSERT INTO Payment (client_id, amount, payment_date, note) VALUES
