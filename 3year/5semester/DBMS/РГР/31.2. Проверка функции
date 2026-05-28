@@ -1,5 +1,0 @@
-SELECT
-    full_name                   AS клиент,
-    get_client_debt(client_id)  AS долг_руб
-FROM Client
-ORDER BY долг_руб DESC;

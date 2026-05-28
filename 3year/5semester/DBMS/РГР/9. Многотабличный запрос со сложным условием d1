@@ -1,6 +1,0 @@
-SELECT ch.*
-FROM Charge ch
-JOIN Contract co ON ch.contract_id = co.contract_id
-WHERE (co.service_type_id = 1 OR co.service_type_id = 3)
-  AND ch.charge_date = '2024-01-31'
-  AND NOT ch.consumption = 0;

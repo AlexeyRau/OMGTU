@@ -1,2 +1,0 @@
-INSERT INTO Resumes (res_id, res_full_name, res_contacts, res_birth_date, res_education, res_experience, res_cat_id)
-VALUES (6, 'Тестовый Кандидат', '+7-900-000-00-00', '1990-01-01', 'Образование', 5, 999);

@@ -1,3 +1,0 @@
-SELECT *
-FROM mv_monthly_consumption
-ORDER BY период, meter_id;

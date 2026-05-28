@@ -1,6 +1,0 @@
-SELECT mr.*
-FROM MeterReading mr
-JOIN Meter       m  ON mr.meter_id     = m.meter_id
-JOIN Contract    co ON m.contract_id   = co.contract_id
-WHERE co.service_type_id = 1
-  AND mr.reading_date BETWEEN '2024-01-01' AND '2024-03-31';

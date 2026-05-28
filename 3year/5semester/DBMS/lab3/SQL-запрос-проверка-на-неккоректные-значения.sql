@@ -1,2 +1,0 @@
-INSERT INTO Vacancies (vac_id, vac_position, vac_description, vac_requirements, vac_salary, vac_emp_id, vac_cat_id, vac_status_id)
-VALUES (4, 'Тестовая должность', 'Описание', 'Требования', -50000, 1, 1, 1);

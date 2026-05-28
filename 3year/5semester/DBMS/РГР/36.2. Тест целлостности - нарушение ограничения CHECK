@@ -1,4 +1,0 @@
-BEGIN;
-INSERT INTO Payment (client_id, amount, payment_date)
-VALUES (1, -500.00, '2024-01-15');
-ROLLBACK;

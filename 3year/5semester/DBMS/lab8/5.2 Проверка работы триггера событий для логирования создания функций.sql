@@ -1,8 +1,0 @@
-CREATE OR REPLACE FUNCTION test_function_1()
-RETURNS INTEGER AS $$
-BEGIN
-    RETURN 1;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP FUNCTION test_function_1();

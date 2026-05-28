@@ -1,4 +1,0 @@
-BEGIN;
-INSERT INTO MeterReading (meter_id, reading_value, reading_date)
-VALUES (1, 0.0001, '2024-04-30');
-ROLLBACK;

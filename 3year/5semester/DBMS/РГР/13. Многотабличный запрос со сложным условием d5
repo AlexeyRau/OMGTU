@@ -1,6 +1,0 @@
-SELECT cl.full_name AS клиент, st.name AS услуга, ch.amount, ch.charge_date
-FROM Charge ch
-JOIN Contract    co ON ch.contract_id      = co.contract_id
-JOIN Client      cl ON co.client_id        = cl.client_id
-JOIN ServiceType st ON co.service_type_id  = st.service_type_id
-WHERE st.name IN ('Водоснабжение', 'Газоснабжение');
